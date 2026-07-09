@@ -101,7 +101,7 @@ export function HistoryClient({ profile, items, timeEntries }: Props) {
           </p>
         </div>
       ) : (
-        <div className="overflow-x-auto sm:overflow-visible custom-scrollbar pb-2">
+        <div className="overflow-x-auto sm:overflow-visible custom-scrollbar pb-32">
           <table className="w-full min-w-[600px] text-left border-collapse">
             <thead>
               <tr className="bg-gray-50 dark:bg-zinc-800/50 text-xs uppercase tracking-wider text-gray-500 dark:text-zinc-400 border-b border-gray-300 dark:border-zinc-600 divide-x divide-gray-300 dark:divide-zinc-600">

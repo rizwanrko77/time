@@ -65,9 +65,9 @@ export default async function PublicPage({ params, searchParams }: { params: Pro
   // We can just rely on Next.js default which doesn't block iframes unless set.
 
   return (
-    <div className="min-h-screen bg-transparent p-4 font-sans text-gray-900 dark:text-white">
+    <div className="min-h-screen bg-transparent p-2 sm:p-4 font-sans text-gray-900 dark:text-white">
       <div className="max-w-4xl mx-auto bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-gray-200 dark:border-zinc-800">
-        <div className="p-6 border-b border-gray-100 dark:border-zinc-800">
+        <div className="p-4 sm:p-6 border-b border-gray-100 dark:border-zinc-800">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
             <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{summary.page_title}</h1>
           </div>
@@ -76,7 +76,7 @@ export default async function PublicPage({ params, searchParams }: { params: Pro
           )}
         </div>
 
-        <div className="p-6">
+        <div className="p-3 sm:p-6">
           <div className="flex justify-end mb-4">
             <div className="flex bg-gray-100 dark:bg-zinc-800 rounded-lg p-1 shrink-0 w-full sm:w-auto">
               <Link
