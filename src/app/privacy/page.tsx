@@ -35,11 +35,13 @@ export default function PrivacyPage() {
               <li><strong>Email address</strong> — used for account authentication and login.</li>
               <li><strong>Display name</strong> — shown on your profile and public availability page.</li>
               <li><strong>Time allocation data</strong> — the tasks, hours, and time entries you create within the app.</li>
+              <li><strong>Session Notes</strong> — the text notes you log for your time entries.</li>
             </ul>
             <p className="mt-3">We do <strong>not</strong> collect:</p>
             <ul className="list-disc pl-6 space-y-1 mt-2">
               <li>Payment or financial information</li>
               <li>Location data</li>
+              <li><strong>Voice audio data</strong> (voice dictation is processed entirely locally on your device via the Web Speech API; no audio recordings are ever transmitted to or stored on our servers)</li>
               <li>Device fingerprints or advertising identifiers</li>
               <li>Data from third-party sources</li>
             </ul>
