@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /settings
+Disallow: /history
+Disallow: /items/
+
+Sitemap: https://time.iamrizwan.com/sitemap.xml
