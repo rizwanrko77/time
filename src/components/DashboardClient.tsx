@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useTransition } from 'react'
 import { Item, Profile, TimeEntry } from '@/lib/types'
 import { capacity } from '@/lib/hours'
 import Link from 'next/link'
@@ -18,6 +18,7 @@ export function DashboardClient({ profile, items, timeEntries }: DashboardProps)
   const [now, setNow] = useState(new Date())
   const [isMounted, setIsMounted] = useState(false)
   const [pendingItemId, setPendingItemId] = useState<string | null>(null)
+  const [isPending, startTransition] = useTransition()
   const [isFullscreen, setIsFullscreen] = useState(false)
 
   // Update 'now' every minute to refresh live timers
@@ -26,6 +27,19 @@ export function DashboardClient({ profile, items, timeEntries }: DashboardProps)
     const interval = setInterval(() => setNow(new Date()), 60000)
     return () => clearInterval(interval)
   }, [])
+
+  // Disable pull-to-refresh on mobile when in fullscreen mode
+  useEffect(() => {
+    if (isFullscreen) {
+      document.body.style.overscrollBehaviorY = 'none'
+    } else {
+      document.body.style.overscrollBehaviorY = 'auto'
+    }
+    
+    return () => {
+      document.body.style.overscrollBehaviorY = 'auto'
+    }
+  }, [isFullscreen])
 
   if (!isMounted) return null
 
@@ -121,43 +135,45 @@ export function DashboardClient({ profile, items, timeEntries }: DashboardProps)
   const comfortable = cap - allocTotal
   const potential = comfortable + potentialAvail
 
-  const handleTimer = async (itemId: string, isRunning: boolean) => {
+  const handleTimer = (itemId: string, isRunning: boolean) => {
     setPendingItemId(itemId)
-    try {
+    startTransition(async () => {
       if (isRunning) {
-        await stopTimer(itemId)
+        const res = await stopTimer(itemId)
+        if (res?.error) alert(res.error)
       } else {
-        await startTimer(itemId)
+        const res = await startTimer(itemId)
+        if (res?.error) alert(res.error)
       }
-    } finally {
-      setPendingItemId(null)
-    }
+    })
   }
+
+  const viewLabel = view === 'week' ? 'Weekly' : 'Monthly'
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center bg-white dark:bg-zinc-900 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-zinc-800">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Capacity Summary</h2>
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{viewLabel} Capacity Summary</h2>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-white dark:bg-zinc-900 p-4 rounded-xl border border-gray-200 dark:border-zinc-800 shadow-sm">
-          <p className="text-sm text-gray-500 dark:text-zinc-400">Total Capacity</p>
+          <p className="text-sm text-gray-500 dark:text-zinc-400">Total Capacity ({viewLabel})</p>
           <p className="text-2xl font-bold text-gray-900 dark:text-white">{cap}h</p>
         </div>
         <div className="bg-white dark:bg-zinc-900 p-4 rounded-xl border border-gray-200 dark:border-zinc-800 shadow-sm">
-          <p className="text-sm text-gray-500 dark:text-zinc-400">Allocated</p>
+          <p className="text-sm text-gray-500 dark:text-zinc-400">Allocated ({view === 'week' ? 'Weekly' : 'Monthly'})</p>
           <p className="text-2xl font-bold text-gray-900 dark:text-white">{allocTotal.toFixed(1)}h</p>
         </div>
         <div className={`bg-white dark:bg-zinc-900 p-4 rounded-xl border border-gray-200 dark:border-zinc-800 shadow-sm ${comfortable < 0 ? 'ring-2 ring-red-500' : ''}`}>
-          <p className="text-sm text-gray-500 dark:text-zinc-400">Comfortably Available</p>
+          <p className="text-sm text-gray-500 dark:text-zinc-400">Comfortably Available ({view === 'week' ? 'Weekly' : 'Monthly'})</p>
           <p className={`text-2xl font-bold ${comfortable < 0 ? 'text-red-600' : 'text-green-600'}`}>
             {Math.max(comfortable, 0).toFixed(1)}h
           </p>
           {comfortable < 0 && <p className="text-xs text-red-500 mt-1">Over-allocated by {Math.abs(comfortable).toFixed(1)}h</p>}
         </div>
         <div className="bg-white dark:bg-zinc-900 p-4 rounded-xl border border-gray-200 dark:border-zinc-800 shadow-sm">
-          <p className="text-sm text-gray-500 dark:text-zinc-400">Potentially Available</p>
+          <p className="text-sm text-gray-500 dark:text-zinc-400">Potentially Available ({view === 'week' ? 'Weekly' : 'Monthly'})</p>
           <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{Math.max(potential, 0).toFixed(1)}h</p>
         </div>
       </div>
@@ -327,17 +343,17 @@ export function DashboardClient({ profile, items, timeEntries }: DashboardProps)
                       {item.tracking_mode === 'manual_track' && (
                         <button
                           onClick={() => handleTimer(item.id, item.isRunning)}
-                          disabled={pendingItemId === item.id}
+                          disabled={isPending && pendingItemId === item.id}
                           className={`inline-flex items-center px-3 py-1 rounded-md text-sm font-medium transition-colors ${
                             item.isRunning 
                               ? 'bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400' 
                               : 'bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400'
                           } disabled:opacity-50 disabled:cursor-not-allowed`}
                         >
-                          {pendingItemId === item.id ? (item.isRunning ? 'Stopping...' : 'Starting...') : (item.isRunning ? 'Stop' : 'Start')}
+                          {(isPending && pendingItemId === item.id) ? (item.isRunning ? 'Stopping...' : 'Starting...') : (item.isRunning ? 'Stop' : 'Start')}
                         </button>
                       )}
-                      <ActionMenu itemId={item.id} />
+                      <ActionMenu itemId={item.id} isRunning={item.isRunning} />
                     </td>
                   </tr>
                   ))

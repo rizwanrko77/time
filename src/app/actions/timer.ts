@@ -23,6 +23,20 @@ export async function startTimer(itemId: string) {
     return { error: 'Invalid item' }
   }
 
+  // Check if any other timer is running for this user
+  const { data: runningEntry } = await supabase
+    .from('time_entries')
+    .select('id, items(title)')
+    .eq('user_id', user.id)
+    .is('stopped_at', null)
+    .single()
+
+  if (runningEntry) {
+    const itemsData = runningEntry.items as any;
+    const title = (Array.isArray(itemsData) ? itemsData[0]?.title : itemsData?.title) || 'Another item';
+    return { error: `"${title}" is already active. Please stop it to start tracking time for this item.` }
+  }
+
   const { error } = await supabase
     .from('time_entries')
     .insert({

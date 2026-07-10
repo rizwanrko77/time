@@ -11,9 +11,9 @@ export default function LandingPage() {
       {/* Hero Section */}
       <section className="max-w-5xl mx-auto px-4 py-20 sm:py-28 text-center">
         <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900 dark:text-white leading-tight">
-          Know where your time goes.
+          Time is a precious resource
           <br />
-          <span className="text-blue-600">Share when you're free.</span>
+          <span className="text-blue-600">Plan it wisely.</span>
         </h1>
         <p className="mt-6 text-lg sm:text-xl text-gray-600 dark:text-zinc-400 max-w-2xl mx-auto leading-relaxed">
           Allocate your hours across jobs, freelance gigs, and side projects.

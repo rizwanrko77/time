@@ -33,6 +33,20 @@ export async function createItem(formData: FormData) {
     return { error: 'Valid notice period required for manual track mode' }
   }
 
+  // Prevent double-submission race conditions
+  const fiveSecondsAgo = new Date(Date.now() - 5000).toISOString()
+  const { data: recentItems } = await supabase
+    .from('items')
+    .select('id')
+    .eq('user_id', user.id)
+    .eq('title', title)
+    .gte('created_at', fiveSecondsAgo)
+    .limit(1)
+
+  if (recentItems && recentItems.length > 0) {
+    revalidatePath('/')
+    redirect('/')
+  }
 
   // Get max sort_order
   const { data: existingItems } = await supabase
@@ -92,6 +106,17 @@ export async function updateItem(id: string, formData: FormData) {
     noticePeriodDays = null
   } else if (noticePeriodDays === null || isNaN(noticePeriodDays) || noticePeriodDays < 0) {
     return { error: 'Valid notice period required for manual track mode' }
+  }
+
+  // Prevent ghost timers: If switching to assumed_spent or expiring the item, auto-stop any running timer
+  const isExpired = endDate ? new Date(endDate) < new Date(new Date().toDateString()) : false
+  if (trackingMode === 'assumed_spent' || isExpired) {
+    await supabase
+      .from('time_entries')
+      .update({ stopped_at: new Date().toISOString() })
+      .eq('item_id', id)
+      .eq('user_id', user.id)
+      .is('stopped_at', null)
   }
 
 

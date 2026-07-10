@@ -197,7 +197,7 @@ export default async function PublicPage({ params, searchParams }: { params: Pro
           <div className="grid grid-cols-2 gap-4 mb-8">
             <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 group relative">
               <div className="flex justify-between items-center mb-1">
-                <p className="text-sm text-gray-500 font-medium">Comfortably Available</p>
+                <p className="text-sm text-gray-500 font-medium">Comfortably Available ({activeView === 'week' ? 'Weekly' : 'Monthly'})</p>
                 <div className="w-4 h-4 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center text-[10px] cursor-help" title="Time not committed to anything. Free to take on right now.">i</div>
               </div>
               <p className="text-2xl font-bold text-green-600">{summary.comfortable.toFixed(1)}h</p>
@@ -205,7 +205,7 @@ export default async function PublicPage({ params, searchParams }: { params: Pro
             
             <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 group relative">
               <div className="flex justify-between items-center mb-1">
-                <p className="text-sm text-gray-500 font-medium">Potentially Available</p>
+                <p className="text-sm text-gray-500 font-medium">Potentially Available ({activeView === 'week' ? 'Weekly' : 'Monthly'})</p>
                 <div className="w-4 h-4 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center text-[10px] cursor-help" title="Comfortably available time, plus tasks I can drop at will (0 notice). Tasks with a notice period could free up later, after their notice.">i</div>
               </div>
               <p className="text-2xl font-bold text-blue-600">{summary.potential.toFixed(1)}h</p>
@@ -229,6 +229,20 @@ export default async function PublicPage({ params, searchParams }: { params: Pro
             </div>
           )}
         </div>
+      </div>
+
+      <div className="max-w-4xl mx-auto mt-8 pb-4 text-center">
+        <p className="text-sm text-gray-500 dark:text-zinc-400">
+          Manage your time with ease at{' '}
+          <a 
+            href="https://time.iamrizwan.com" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline transition-colors"
+          >
+            time.iamrizwan.com
+          </a>
+        </p>
       </div>
     </div>
   )

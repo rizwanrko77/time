@@ -5,9 +5,10 @@ import Link from 'next/link'
 
 type Props = {
   itemId: string
+  isRunning?: boolean
 }
 
-export function ActionMenu({ itemId }: Props) {
+export function ActionMenu({ itemId, isRunning }: Props) {
   const [isOpen, setIsOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
@@ -48,13 +49,24 @@ export function ActionMenu({ itemId }: Props) {
             >
               View Item
             </Link>
-            <Link
-              href={`/items/${itemId}/edit`}
-              className="block px-4 py-2 text-sm text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-700 transition-colors"
-              role="menuitem"
-            >
-              Edit Item
-            </Link>
+            {isRunning ? (
+              <button
+                className="w-full text-left block px-4 py-2 text-sm text-gray-400 dark:text-zinc-500 cursor-not-allowed opacity-50"
+                role="menuitem"
+                disabled
+                title="Stop timer to edit"
+              >
+                Edit Item (Stop timer first)
+              </button>
+            ) : (
+              <Link
+                href={`/items/${itemId}/edit`}
+                className="block px-4 py-2 text-sm text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-700 transition-colors"
+                role="menuitem"
+              >
+                Edit Item
+              </Link>
+            )}
           </div>
         </div>
       )}

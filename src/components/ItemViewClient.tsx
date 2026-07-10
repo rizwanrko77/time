@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useTransition } from 'react'
 import { Item, TimeEntry, Profile } from '@/lib/types'
 import { startTimer, stopTimer, updateTimeEntryNotes } from '@/app/actions/timer'
 import Link from 'next/link'
@@ -14,7 +14,7 @@ type Props = {
 
 export function ItemViewClient({ item, timeEntries, profile }: Props) {
   const [now, setNow] = useState(new Date())
-  const [isPending, setIsPending] = useState(false)
+  const [isPending, startTransition] = useTransition()
   const [mounted, setMounted] = useState(false)
   
   const [editingEntryId, setEditingEntryId] = useState<string | null>(null)
@@ -37,14 +37,16 @@ export function ItemViewClient({ item, timeEntries, profile }: Props) {
   const latestEntry = timeEntries.length > 0 ? timeEntries[0] : null // Assuming they are sorted descending
   const isRunning = latestEntry && latestEntry.stopped_at === null
 
-  const handleTimer = async (isRunningState: boolean | null) => {
-    setIsPending(true)
-    if (isRunningState) {
-      await stopTimer(item.id)
-    } else {
-      await startTimer(item.id)
-    }
-    setIsPending(false)
+  const handleTimer = (isRunningState: boolean | null) => {
+    startTransition(async () => {
+      if (isRunningState) {
+        const res = await stopTimer(item.id)
+        if (res?.error) alert(res.error)
+      } else {
+        const res = await startTimer(item.id)
+        if (res?.error) alert(res.error)
+      }
+    })
   }
 
   const formatDuration = (ms: number) => {
@@ -105,12 +107,22 @@ export function ItemViewClient({ item, timeEntries, profile }: Props) {
             )}
           </div>
           <div className="flex flex-col items-end gap-3">
-            <Link
-              href={`/items/${item.id}/edit`}
-              className="px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-sm font-medium text-gray-900 dark:text-white rounded-lg transition-colors"
-            >
-              Edit Details
-            </Link>
+            {isRunning ? (
+              <button
+                disabled
+                title="Stop timer to edit details"
+                className="px-4 py-2 bg-gray-100 dark:bg-zinc-800 text-sm font-medium text-gray-400 dark:text-zinc-500 rounded-lg cursor-not-allowed opacity-50"
+              >
+                Edit Details (Stop timer first)
+              </button>
+            ) : (
+              <Link
+                href={`/items/${item.id}/edit`}
+                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-sm font-medium text-gray-900 dark:text-white rounded-lg transition-colors"
+              >
+                Edit Details
+              </Link>
+            )}
             
             {item.tracking_mode === 'manual_track' && (
               <button
