@@ -312,7 +312,7 @@ export function DashboardClient({ profile, items, timeEntries }: DashboardProps)
                                 <svg className="w-3.5 h-3.5 text-gray-500 dark:text-zinc-400 group-hover/stats:text-blue-600 dark:group-hover/stats:text-blue-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                                 </svg>
-                                <div className="absolute right-0 sm:left-1/2 bottom-full mb-2 sm:-translate-x-1/2 hidden group-hover/stats:block group-focus/stats:block w-48 z-50">
+                                <div className="absolute right-0 sm:left-1/2 top-full mt-2 sm:bottom-full sm:mb-2 sm:top-auto sm:mt-0 sm:-translate-x-1/2 hidden group-hover/stats:block group-focus/stats:block w-48 z-[60]">
                                   <div className="relative bg-white dark:bg-zinc-800 text-gray-700 dark:text-zinc-300 text-xs rounded-xl shadow-xl border border-gray-200 dark:border-zinc-700 p-4 text-left font-normal normal-case leading-relaxed">
                                     <div className="flex flex-col space-y-3">
                                       <div>
@@ -328,7 +328,7 @@ export function DashboardClient({ profile, items, timeEntries }: DashboardProps)
                                         <span className="font-bold text-purple-600 dark:text-purple-400 text-lg">{item.stats_90d}%</span>
                                       </div>
                                     </div>
-                                    <div className="absolute -bottom-1.5 right-2 sm:left-1/2 sm:-translate-x-1/2 w-3 h-3 bg-white dark:bg-zinc-800 border-b border-r border-gray-200 dark:border-zinc-700 transform rotate-45"></div>
+                                    <div className="absolute -top-1.5 sm:-bottom-1.5 sm:top-auto right-2 sm:left-1/2 sm:-translate-x-1/2 w-3 h-3 bg-white dark:bg-zinc-800 border-t border-l sm:border-t-0 sm:border-l-0 sm:border-b sm:border-r border-gray-200 dark:border-zinc-700 transform rotate-45"></div>
                                   </div>
                                 </div>
                               </button>

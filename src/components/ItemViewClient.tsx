@@ -18,9 +18,93 @@ export function ItemViewClient({ item, timeEntries, profile }: Props) {
   const [mounted, setMounted] = useState(false)
   
   const [editingEntryId, setEditingEntryId] = useState<string | null>(null)
+  const [presetFilter, setPresetFilter] = useState<string>('All Time')
+  const [filterStartDate, setFilterStartDate] = useState<string>('')
+  const [filterEndDate, setFilterEndDate] = useState<string>('')
   
   // Sort entries so latest is at the top
   const sortedEntries = [...timeEntries].sort((a, b) => new Date(b.started_at).getTime() - new Date(a.started_at).getTime())
+
+  // Date bounds helper
+  const getBoundsForPreset = (preset: string) => {
+    if (preset === 'All Time' || preset === 'Custom Date') return null;
+    
+    const today = new Date();
+    const toYMD = (d: Date) => {
+      return new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+    }
+    
+    const d = new Date();
+    
+    if (preset === 'Today') return { start: toYMD(today), end: toYMD(today) };
+    if (preset === 'Yesterday') {
+      d.setDate(d.getDate() - 1);
+      return { start: toYMD(d), end: toYMD(d) };
+    }
+    if (preset === 'This Week') {
+      const day = d.getDay();
+      const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Monday as start
+      d.setDate(diff);
+      const start = toYMD(d);
+      d.setDate(d.getDate() + 6);
+      return { start, end: toYMD(d) };
+    }
+    if (preset === 'Last Week') {
+      const day = d.getDay();
+      const diff = d.getDate() - day + (day === 0 ? -6 : 1) - 7;
+      d.setDate(diff);
+      const start = toYMD(d);
+      d.setDate(d.getDate() + 6);
+      return { start, end: toYMD(d) };
+    }
+    if (preset === 'This Month') {
+      const start = toYMD(new Date(d.getFullYear(), d.getMonth(), 1));
+      const end = toYMD(new Date(d.getFullYear(), d.getMonth() + 1, 0));
+      return { start, end };
+    }
+    if (preset === 'Last Month') {
+      const start = toYMD(new Date(d.getFullYear(), d.getMonth() - 1, 1));
+      const end = toYMD(new Date(d.getFullYear(), d.getMonth(), 0));
+      return { start, end };
+    }
+    if (preset === 'This Quarter') {
+      const quarter = Math.floor(d.getMonth() / 3);
+      const start = toYMD(new Date(d.getFullYear(), quarter * 3, 1));
+      const end = toYMD(new Date(d.getFullYear(), quarter * 3 + 3, 0));
+      return { start, end };
+    }
+    if (preset === 'Last Quarter') {
+      const quarter = Math.floor(d.getMonth() / 3) - 1;
+      const start = toYMD(new Date(d.getFullYear(), quarter * 3, 1));
+      const end = toYMD(new Date(d.getFullYear(), quarter * 3 + 3, 0));
+      return { start, end };
+    }
+    return null;
+  }
+
+  const bounds = getBoundsForPreset(presetFilter);
+  const effectiveStart = bounds ? bounds.start : filterStartDate;
+  const effectiveEnd = bounds ? bounds.end : filterEndDate;
+
+  // Apply filters
+  const filteredEntries = sortedEntries.filter(te => {
+    if (presetFilter === 'All Time') return true;
+    if (presetFilter === 'Custom Date' && !effectiveStart && !effectiveEnd) return true;
+    
+    const startObj = new Date(te.started_at);
+    const localDateStr = new Date(startObj.getTime() - (startObj.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+
+    if (effectiveStart && localDateStr < effectiveStart) return false;
+    if (effectiveEnd && localDateStr > effectiveEnd) return false;
+    return true;
+  })
+
+  let filteredDurationMs = 0
+  for (const te of filteredEntries) {
+    const start = new Date(te.started_at)
+    const end = te.stopped_at ? new Date(te.stopped_at) : now
+    filteredDurationMs += (end.getTime() - start.getTime())
+  }
 
   // Update 'now' every minute to refresh live timers
   useEffect(() => {
@@ -61,7 +145,7 @@ export function ItemViewClient({ item, timeEntries, profile }: Props) {
   const formatDate = (dateStr: string) => {
     if (!mounted) return '' // Prevent hydration mismatch
     return new Date(dateStr).toLocaleString(undefined, {
-      month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
+      month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true
     })
   }
 
@@ -164,11 +248,62 @@ export function ItemViewClient({ item, timeEntries, profile }: Props) {
 
       {item.tracking_mode === 'manual_track' && (
         <div>
-          <div className="p-4 bg-gray-50 dark:bg-zinc-800/50 border-b border-gray-200 dark:border-zinc-800">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Session History</h2>
+          <div className="p-4 bg-gray-50 dark:bg-zinc-800/50 border-b border-gray-200 dark:border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white shrink-0">Session History</h2>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                <select 
+                  value={presetFilter}
+                  onChange={(e) => {
+                    setPresetFilter(e.target.value)
+                    if (e.target.value !== 'Custom Date') {
+                      setFilterStartDate('')
+                      setFilterEndDate('')
+                    }
+                  }}
+                  className="text-sm px-3 py-1.5 rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer shadow-sm"
+                >
+                  {['All Time', 'Today', 'Yesterday', 'This Week', 'Last Week', 'This Month', 'Last Month', 'This Quarter', 'Last Quarter', 'Custom Date'].map(p => (
+                    <option key={p} value={p}>{p}</option>
+                  ))}
+                </select>
+                
+                {presetFilter === 'Custom Date' && (
+                  <div className="flex items-center gap-2">
+                    <input 
+                      type="date" 
+                      value={filterStartDate}
+                      onChange={(e) => setFilterStartDate(e.target.value)}
+                      className="text-sm px-2 py-1.5 rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none shadow-sm"
+                    />
+                    <span className="text-gray-500 dark:text-zinc-500">-</span>
+                    <input 
+                      type="date" 
+                      value={filterEndDate}
+                      onChange={(e) => setFilterEndDate(e.target.value)}
+                      className="text-sm px-2 py-1.5 rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none shadow-sm"
+                    />
+                  </div>
+                )}
+              </div>
+              
+              {presetFilter !== 'All Time' && (
+                <div className="flex items-center justify-between sm:justify-end gap-2">
+                  <div className="text-sm font-medium text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/40 px-3 py-1.5 rounded-md border border-blue-200 dark:border-blue-800/50 whitespace-nowrap shadow-sm">
+                    Total: {mounted ? formatDuration(filteredDurationMs) : '--m'}
+                  </div>
+                  <button 
+                    onClick={() => { setPresetFilter('All Time'); setFilterStartDate(''); setFilterEndDate(''); }}
+                    className="sm:hidden text-sm text-red-500 font-medium px-2 py-1 bg-red-50 dark:bg-red-900/20 rounded-md"
+                  >
+                    Clear
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
           
-          {timeEntries.length === 0 ? (
+          {filteredEntries.length === 0 ? (
             <div className="p-8 text-center text-gray-500 dark:text-zinc-400">
               No time tracked yet. Click "Start Timer" to begin your first session.
             </div>
@@ -184,7 +319,7 @@ export function ItemViewClient({ item, timeEntries, profile }: Props) {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-zinc-800">
-                  {sortedEntries.map(te => {
+                  {filteredEntries.map(te => {
                     const start = new Date(te.started_at)
                     const end = te.stopped_at ? new Date(te.stopped_at) : now
                     const durationMs = end.getTime() - start.getTime()

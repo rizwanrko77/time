@@ -21,6 +21,7 @@ declare global {
 export function SessionNoteEditor({ isOpen, entryId, onClose, initialNotes, onSave }: Props) {
   const [notes, setNotes] = useState(initialNotes || '')
   const [isRecording, setIsRecording] = useState(false)
+  const isRecordingRef = useRef(false)
   const [isSaving, setIsSaving] = useState(false)
   const [speechSupported, setSpeechSupported] = useState(true)
   const [language, setLanguage] = useState('en-IN')
@@ -108,8 +109,8 @@ export function SessionNoteEditor({ isOpen, entryId, onClose, initialNotes, onSa
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
       if (SpeechRecognition) {
         const recognition = new SpeechRecognition()
-        recognition.continuous = true
-        recognition.interimResults = true // Fixes Android Chrome not firing onresult
+        recognition.continuous = false // Force short bursts to guarantee isFinal fires on Android
+        recognition.interimResults = true
         recognition.lang = language
 
         recognition.onresult = (event: any) => {
@@ -143,8 +144,17 @@ export function SessionNoteEditor({ isOpen, entryId, onClose, initialNotes, onSa
         }
 
         recognition.onend = () => {
-          setIsRecording(false)
-          cleanupAudio()
+          if (isRecordingRef.current) {
+            // Android automatically stopped the mic after a pause. Instantly restart it!
+            try {
+              recognition.start()
+            } catch (e) {
+              console.error(e)
+            }
+          } else {
+            setIsRecording(false)
+            cleanupAudio()
+          }
         }
 
         recognitionRef.current = recognition
@@ -212,6 +222,7 @@ export function SessionNoteEditor({ isOpen, entryId, onClose, initialNotes, onSa
 
   const toggleRecording = () => {
     if (isRecording) {
+      isRecordingRef.current = false
       if (recognitionRef.current) {
         recognitionRef.current.stop()
       }
@@ -219,6 +230,7 @@ export function SessionNoteEditor({ isOpen, entryId, onClose, initialNotes, onSa
       cleanupAudio()
     } else {
       try {
+        isRecordingRef.current = true
         recognitionRef.current?.start()
         setIsRecording(true)
         startAudioVisualizer()
@@ -230,6 +242,7 @@ export function SessionNoteEditor({ isOpen, entryId, onClose, initialNotes, onSa
 
   const handleSave = async () => {
     if (isRecording) {
+      isRecordingRef.current = false
       recognitionRef.current?.stop()
       setIsRecording(false)
       cleanupAudio()
