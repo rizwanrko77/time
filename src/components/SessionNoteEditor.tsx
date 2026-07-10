@@ -109,7 +109,7 @@ export function SessionNoteEditor({ isOpen, entryId, onClose, initialNotes, onSa
       if (SpeechRecognition) {
         const recognition = new SpeechRecognition()
         recognition.continuous = true
-        recognition.interimResults = false
+        recognition.interimResults = true // Fixes Android Chrome not firing onresult
         recognition.lang = language
 
         recognition.onresult = (event: any) => {
