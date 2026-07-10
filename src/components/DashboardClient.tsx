@@ -32,12 +32,15 @@ export function DashboardClient({ profile, items, timeEntries }: DashboardProps)
   useEffect(() => {
     if (isFullscreen) {
       document.body.style.overscrollBehaviorY = 'none'
+      document.documentElement.style.overscrollBehaviorY = 'none'
     } else {
       document.body.style.overscrollBehaviorY = 'auto'
+      document.documentElement.style.overscrollBehaviorY = 'auto'
     }
     
     return () => {
       document.body.style.overscrollBehaviorY = 'auto'
+      document.documentElement.style.overscrollBehaviorY = 'auto'
     }
   }, [isFullscreen])
 
@@ -58,8 +61,9 @@ export function DashboardClient({ profile, items, timeEntries }: DashboardProps)
     
     // Check if item is expired
     const isExpired = item.end_date ? new Date(item.end_date) < new Date(now.toDateString()) : false
+    const isActive = item.is_active !== false // Treat null/undefined as true, or explicitly true
 
-    if (!isExpired) {
+    if (!isExpired && isActive) {
       allocTotal += allocView
       if (item.notice_period_days === 0) {
         potentialAvail += allocView
@@ -178,7 +182,7 @@ export function DashboardClient({ profile, items, timeEntries }: DashboardProps)
         </div>
       </div>
 
-      <div className={`bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800 shadow-sm overflow-visible flex flex-col ${isFullscreen ? 'fixed inset-0 z-[100] m-0 sm:m-4 sm:rounded-xl overflow-y-auto max-h-screen sm:max-h-[calc(100vh-32px)]' : ''}`}>
+      <div className={`bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800 shadow-sm overflow-visible flex flex-col ${isFullscreen ? 'fixed inset-0 z-[100] m-0 sm:m-4 sm:rounded-xl overflow-y-auto overscroll-none max-h-screen sm:max-h-[calc(100vh-32px)]' : ''}`}>
         <div className="p-4 border-b border-gray-200 dark:border-zinc-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sticky top-0 bg-white dark:bg-zinc-900 z-10 sm:rounded-t-xl">
           <div className="flex justify-between items-center w-full sm:w-auto">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Your Items</h2>
