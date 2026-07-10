@@ -20,10 +20,7 @@ declare global {
 
 export function SessionNoteEditor({ isOpen, entryId, onClose, initialNotes, onSave }: Props) {
   const [notes, setNotes] = useState(initialNotes || '')
-  const [interimNote, setInterimNote] = useState('')
-  const interimNoteRef = useRef('')
   const [isRecording, setIsRecording] = useState(false)
-  const isRecordingRef = useRef(false)
   const [isSaving, setIsSaving] = useState(false)
   const [speechSupported, setSpeechSupported] = useState(true)
   const [language, setLanguage] = useState('en-IN')
@@ -111,24 +108,18 @@ export function SessionNoteEditor({ isOpen, entryId, onClose, initialNotes, onSa
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
       if (SpeechRecognition) {
         const recognition = new SpeechRecognition()
-        recognition.continuous = true // Changed back to true to prevent beeping
-        recognition.interimResults = true
+        recognition.continuous = true
+        recognition.interimResults = false
         recognition.lang = language
 
         recognition.onresult = (event: any) => {
           let finalTranscript = ''
-          let currentInterim = ''
 
           for (let i = event.resultIndex; i < event.results.length; ++i) {
             if (event.results[i].isFinal) {
               finalTranscript += event.results[i][0].transcript
-            } else {
-              currentInterim += event.results[i][0].transcript
             }
           }
-          
-          setInterimNote(currentInterim)
-          interimNoteRef.current = currentInterim
 
           if (finalTranscript) {
             setNotes(prev => {
@@ -152,22 +143,6 @@ export function SessionNoteEditor({ isOpen, entryId, onClose, initialNotes, onSa
         }
 
         recognition.onend = () => {
-          // If Android cuts off and leaves text stuck in interim, forcefully save it!
-          if (interimNoteRef.current.trim()) {
-            const stuckText = interimNoteRef.current
-            setNotes(prev => {
-              const separator = prev.trim() ? '\n\n' : ''
-              const newNotes = prev + separator + stuckText
-              if (entryId) {
-                localStorage.setItem(`draft-note-${entryId}`, newNotes)
-              }
-              return newNotes
-            })
-            setInterimNote('')
-            interimNoteRef.current = ''
-          }
-          
-          isRecordingRef.current = false
           setIsRecording(false)
           cleanupAudio()
         }
@@ -236,8 +211,12 @@ export function SessionNoteEditor({ isOpen, entryId, onClose, initialNotes, onSa
   }
 
   const toggleRecording = () => {
+    if (typeof window !== 'undefined' && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+      alert("Due to browser limitations on mobile devices, dictation is only supported on Desktop/Laptop.")
+      return
+    }
+
     if (isRecording) {
-      isRecordingRef.current = false
       if (recognitionRef.current) {
         recognitionRef.current.stop()
       }
@@ -245,7 +224,6 @@ export function SessionNoteEditor({ isOpen, entryId, onClose, initialNotes, onSa
       cleanupAudio()
     } else {
       try {
-        isRecordingRef.current = true
         recognitionRef.current?.start()
         setIsRecording(true)
         startAudioVisualizer()
@@ -257,7 +235,6 @@ export function SessionNoteEditor({ isOpen, entryId, onClose, initialNotes, onSa
 
   const handleSave = async () => {
     if (isRecording) {
-      isRecordingRef.current = false
       recognitionRef.current?.stop()
       setIsRecording(false)
       cleanupAudio()
@@ -427,26 +404,13 @@ export function SessionNoteEditor({ isOpen, entryId, onClose, initialNotes, onSa
 
         {/* Content */}
         <div className="flex-1 p-6 flex flex-col relative overflow-hidden">
-          <div className="relative">
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              className="w-full h-48 sm:h-64 p-4 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-900/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none custom-scrollbar"
-              placeholder={isRecording ? "Listening... (Pause to stop)" : "Type or speak your notes here..."}
-              disabled={isSaving}
-            />
-            {interimNote && (
-              <div className="absolute bottom-4 left-4 right-4 p-3 bg-blue-50/90 dark:bg-blue-900/80 text-blue-800 dark:text-blue-100 rounded-lg backdrop-blur-sm pointer-events-none text-sm animate-in fade-in zoom-in-95 duration-200 shadow border border-blue-200/50 dark:border-blue-700/50 z-10">
-                <span className="italic flex items-start gap-2.5">
-                  <span className="relative flex h-2 w-2 shrink-0 mt-1.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
-                  </span>
-                  <span className="leading-relaxed">{interimNote}</span>
-                </span>
-              </div>
-            )}
-          </div>
+          <textarea
+            value={notes}
+            onChange={(e) => handleNotesChange(e.target.value)}
+            placeholder="Type your notes here or click Dictate..."
+            className="flex-1 w-full bg-transparent border-0 focus:ring-0 p-0 text-gray-800 dark:text-zinc-200 resize-none placeholder:text-gray-400 text-lg leading-relaxed custom-scrollbar pb-8 outline-none"
+            autoFocus
+          />
 
           {/* Controls - Fixed to bottom of panel */}
           <div className="absolute bottom-6 left-6 right-6 flex items-center justify-between pt-4 bg-white dark:bg-zinc-900 border-t border-gray-100 dark:border-zinc-800">
