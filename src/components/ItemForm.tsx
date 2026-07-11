@@ -72,11 +72,10 @@ export function ItemForm({ item }: ItemFormProps) {
             maxLength={maxTitle}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className={`mt-1 block w-full rounded-lg border px-3 py-2 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white sm:text-sm transition-colors ${
-              title.length >= maxTitle 
-                ? 'border-red-500 focus:ring-red-500 focus:border-red-500' 
+            className={`mt-1 block w-full rounded-lg border px-3 py-2 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white sm:text-sm transition-colors ${title.length >= maxTitle
+                ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
                 : 'border-gray-300 dark:border-zinc-700'
-            }`}
+              }`}
             placeholder={`e.g. Client X, Family Time, Sleep (max ${maxTitle} chars)`}
           />
           <div className="mt-1 flex justify-end">
@@ -97,11 +96,10 @@ export function ItemForm({ item }: ItemFormProps) {
             maxLength={maxDesc}
             value={desc}
             onChange={(e) => setDesc(e.target.value)}
-            className={`mt-1 block w-full rounded-lg border px-3 py-2 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white sm:text-sm transition-colors ${
-              desc.length >= maxDesc 
-                ? 'border-red-500 focus:ring-red-500 focus:border-red-500' 
+            className={`mt-1 block w-full rounded-lg border px-3 py-2 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white sm:text-sm transition-colors ${desc.length >= maxDesc
+                ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
                 : 'border-gray-300 dark:border-zinc-700'
-            }`}
+              }`}
             placeholder="Add more details about this item... (max 800 chars)"
           />
           <div className="mt-1 flex justify-end">
@@ -199,12 +197,21 @@ export function ItemForm({ item }: ItemFormProps) {
 
         {trackingMode === 'manual_track' && (
           <div>
-            <label htmlFor="notice_period_days" className="block text-sm font-medium text-gray-700 dark:text-zinc-300">
-              Notice Period (Days)
-            </label>
-            <p className="text-xs text-gray-500 dark:text-zinc-400 mb-1">
-              0 = Free at will. Number of days notice required to drop this.
-            </p>
+            <div className="flex items-center gap-1.5 mb-1">
+              <label htmlFor="notice_period_days" className="block text-sm font-medium text-gray-700 dark:text-zinc-300">
+                Notice Period (Days)
+              </label>
+              <div className="group relative flex items-center">
+                <svg className="w-4 h-4 text-gray-400 hover:text-gray-500 cursor-help" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div className="absolute bottom-full left-0 sm:left-1/2 sm:-translate-x-1/2 mb-2 w-64 sm:w-72 p-3 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white border border-gray-200 dark:border-zinc-700 text-xs rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 pointer-events-none">
+                  <p className="mb-2"><strong>0 = Free at will.</strong> The number of days notice required to drop this commitment.</p>
+                  <p>Items with a 0-day notice period are considered flexible. Their hours are included in your <strong>Potentially Available</strong> time on your public page.</p>
+                  <div className="absolute top-full left-4 sm:left-1/2 sm:-translate-x-1/2 border-4 border-transparent border-t-white dark:border-t-zinc-800"></div>
+                </div>
+              </div>
+            </div>
             <input
               id="notice_period_days"
               name="notice_period_days"

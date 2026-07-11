@@ -163,7 +163,7 @@ export function ItemViewClient({ item, timeEntries, profile }: Props) {
   return (
     <div className="bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800 shadow-sm overflow-hidden">
       <div className="p-6 border-b border-gray-200 dark:border-zinc-800">
-        <div className="flex justify-between items-start">
+        <div>
           <div>
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{item.title}</h1>
@@ -190,19 +190,20 @@ export function ItemViewClient({ item, timeEntries, profile }: Props) {
               </a>
             )}
           </div>
-          <div className="flex flex-col items-end gap-3">
+          
+          <div className="mt-6 flex flex-col sm:flex-row gap-3">
             {isRunning ? (
               <button
                 disabled
                 title="Stop timer to edit details"
-                className="px-4 py-2 bg-gray-100 dark:bg-zinc-800 text-sm font-medium text-gray-400 dark:text-zinc-500 rounded-lg cursor-not-allowed opacity-50"
+                className="flex-1 flex justify-center items-center px-4 py-3 bg-gray-100 dark:bg-zinc-800 text-sm font-medium text-gray-400 dark:text-zinc-500 rounded-lg cursor-not-allowed opacity-50"
               >
                 Edit Details (Stop timer first)
               </button>
             ) : (
               <Link
                 href={`/items/${item.id}/edit`}
-                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-sm font-medium text-gray-900 dark:text-white rounded-lg transition-colors"
+                className="flex-1 flex justify-center items-center px-4 py-3 bg-gray-100 hover:bg-gray-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-sm font-medium text-gray-900 dark:text-white rounded-lg transition-colors"
               >
                 Edit Details
               </Link>
@@ -212,7 +213,7 @@ export function ItemViewClient({ item, timeEntries, profile }: Props) {
               <button
                 onClick={() => handleTimer(isRunning)}
                 disabled={isPending}
-                className={`px-6 py-2 rounded-lg text-sm font-bold shadow-sm transition-colors ${
+                className={`flex-1 flex justify-center items-center px-6 py-3 rounded-lg text-sm font-bold shadow-sm transition-colors ${
                   isRunning 
                     ? 'bg-red-500 text-white hover:bg-red-600 focus:ring-2 focus:ring-red-500 focus:ring-offset-2' 
                     : 'bg-green-500 text-white hover:bg-green-600 focus:ring-2 focus:ring-green-500 focus:ring-offset-2'
