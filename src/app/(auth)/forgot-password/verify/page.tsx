@@ -5,8 +5,9 @@ import { resetPasswordWithOtp } from '@/app/actions/auth'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import { Suspense } from 'react'
 
-export default function ForgotPasswordVerifyPage() {
+function ForgotPasswordVerifyContent() {
   const searchParams = useSearchParams()
   const email = searchParams?.get('email') || ''
   const [showPassword, setShowPassword] = useState(false)
@@ -170,5 +171,15 @@ export default function ForgotPasswordVerifyPage() {
         </form>
       </div>
     </div>
+  )
+}
+
+export default function ForgotPasswordVerifyPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-zinc-950 px-4">
+      <div className="text-gray-500">Loading...</div>
+    </div>}>
+      <ForgotPasswordVerifyContent />
+    </Suspense>
   )
 }

@@ -4,8 +4,9 @@ import { useActionState, useState, useEffect } from 'react'
 import { verifyRegistration, resendVerification } from '@/app/actions/auth'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { Suspense } from 'react'
 
-export default function RegisterVerifyPage() {
+function RegisterVerifyContent() {
   const searchParams = useSearchParams()
   const email = searchParams?.get('email') || ''
   
@@ -130,5 +131,15 @@ export default function RegisterVerifyPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function RegisterVerifyPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-zinc-950 px-4">
+      <div className="text-gray-500">Loading...</div>
+    </div>}>
+      <RegisterVerifyContent />
+    </Suspense>
   )
 }
