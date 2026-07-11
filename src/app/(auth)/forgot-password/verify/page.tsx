@@ -1,65 +1,91 @@
 'use client'
 
-import { useActionState, useState } from 'react'
-import { register } from '@/app/actions/auth'
+import { useActionState, useState, useEffect } from 'react'
+import { resetPasswordWithOtp } from '@/app/actions/auth'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { createClient } from '@/lib/supabase/client'
 
-export default function RegisterPage() {
+export default function ForgotPasswordVerifyPage() {
+  const searchParams = useSearchParams()
+  const email = searchParams?.get('email') || ''
   const [showPassword, setShowPassword] = useState(false)
   const [password, setPassword] = useState('')
+  const [isOtpVerified, setIsOtpVerified] = useState(false)
+
+  // Declare useActionState first so we can use its state in the useEffect dependency array
   const [state, formAction, pending] = useActionState(async (prevState: any, formData: FormData) => {
-    const result = await register(formData)
+    const result = await resetPasswordWithOtp(formData)
     if (result?.error) {
       return { error: result.error }
     }
     return { error: null }
   }, { error: null })
 
+  useEffect(() => {
+    async function checkSession() {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user && user.email === email) {
+        setIsOtpVerified(true)
+      }
+    }
+    checkSession()
+  }, [email, state])
+
+  if (!email) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-zinc-950 px-4">
+        <div className="max-w-md w-full space-y-8 bg-white dark:bg-zinc-900 p-8 rounded-2xl shadow-sm text-center">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white">Invalid Request</h2>
+          <p className="text-gray-600 dark:text-zinc-400">No email address provided for recovery.</p>
+          <Link href="/forgot-password" className="text-blue-600 hover:underline inline-block mt-4">Go back to Reset Password</Link>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-zinc-950 px-4">
       <div className="max-w-md w-full space-y-8 bg-white dark:bg-zinc-900 p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-zinc-800">
         <div>
           <h2 className="mt-2 text-center text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
-            Create an account
+            {isOtpVerified ? 'Enter New Password' : 'Verify & Set Password'}
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600 dark:text-zinc-400">
-            Start tracking your time allocation today
+            {isOtpVerified 
+              ? 'Your email has been verified. Choose a strong new password.' 
+              : <span>We sent a 6-digit recovery code to <strong>{email}</strong></span>}
           </p>
         </div>
         
         <form className="mt-8 space-y-6" action={formAction}>
+          <input type="hidden" name="email" value={email} />
+          
           <div className="space-y-4">
-            <div>
-              <label htmlFor="display_name" className="block text-sm font-medium text-gray-700 dark:text-zinc-300">
-                Display Name
-              </label>
-              <input
-                id="display_name"
-                name="display_name"
-                type="text"
-                required
-                className="mt-1 block w-full rounded-lg border border-gray-300 dark:border-zinc-700 px-3 py-2 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm"
-                placeholder="John Doe"
-              />
-            </div>
+            {isOtpVerified ? (
+              <input type="hidden" name="token" value="000000" />
+            ) : (
+              <div>
+                <label htmlFor="token" className="block text-sm font-medium text-gray-700 dark:text-zinc-300">
+                  6-Digit Recovery Code
+                </label>
+                <input
+                  id="token"
+                  name="token"
+                  type="text"
+                  required
+                  maxLength={6}
+                  autoComplete="one-time-code"
+                  className="mt-1 block w-full rounded-lg border border-gray-300 dark:border-zinc-700 px-3 py-3 text-center tracking-widest text-xl font-mono bg-white dark:bg-zinc-800 text-gray-900 dark:text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  placeholder="123456"
+                />
+              </div>
+            )}
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-zinc-300">
-                Email address
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                required
-                className="mt-1 block w-full rounded-lg border border-gray-300 dark:border-zinc-700 px-3 py-2 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm"
-                placeholder="you@example.com"
-              />
-            </div>
-            
-            <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-zinc-300">
-                Password
+                New Password
               </label>
               <div className="relative mt-1">
                 <input
@@ -69,7 +95,10 @@ export default function RegisterPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   type={showPassword ? 'text' : 'password'}
                   required
+                  minLength={8}
+                  autoComplete="new-password"
                   className="block w-full rounded-lg border border-gray-300 dark:border-zinc-700 pl-3 pr-10 py-2 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm"
+                  placeholder="Minimum 8 characters"
                 />
                 <button
                   type="button"
@@ -88,7 +117,7 @@ export default function RegisterPage() {
                   )}
                 </button>
               </div>
-              
+
               {/* Realtime Password Validation */}
               <div className="mt-3 space-y-2 text-xs">
                 <div className={`flex items-center gap-2 ${password.length >= 8 ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-zinc-500'}`}>
@@ -136,16 +165,9 @@ export default function RegisterPage() {
             disabled={pending}
             className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            {pending ? 'Creating account...' : 'Sign up'}
+            {pending ? 'Updating...' : 'Securely Update Password'}
           </button>
         </form>
-
-        <div className="text-center text-sm">
-          <span className="text-gray-600 dark:text-zinc-400">Already have an account? </span>
-          <Link href="/login" className="font-medium text-blue-600 hover:text-blue-500">
-            Sign in
-          </Link>
-        </div>
       </div>
     </div>
   )

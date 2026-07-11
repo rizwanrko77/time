@@ -21,6 +21,9 @@ export async function login(formData: FormData) {
   })
 
   if (error) {
+    if (error.message.toLowerCase().includes('email not confirmed')) {
+      redirect(`/register/verify?email=${encodeURIComponent(email)}`)
+    }
     return { error: error.message }
   }
 
@@ -63,8 +66,12 @@ export async function register(formData: FormData) {
   const randomSuffix = Math.random().toString(36).substring(2, 6)
   const slug = `${baseSlug}-${randomSuffix}`
 
+  // Since "Confirm Email" is ON, the user doesn't have a session yet.
+  // We MUST use the Admin client to bypass RLS and create their profile rows.
+  const supabaseAdmin = createAdminClient()
+
   // 3. Create profile
-  const { error: profileError } = await supabase.from('profiles').insert({
+  const { error: profileError } = await supabaseAdmin.from('profiles').insert({
     id: authData.user.id,
     display_name: displayName,
     slug,
@@ -79,7 +86,7 @@ export async function register(formData: FormData) {
   }
 
   // 4. Create empty CTA
-  const { error: ctaError } = await supabase.from('cta').insert({
+  const { error: ctaError } = await supabaseAdmin.from('cta').insert({
     user_id: authData.user.id,
   })
 
@@ -87,8 +94,7 @@ export async function register(formData: FormData) {
     console.error('Failed to create CTA row', ctaError)
   }
 
-  revalidatePath('/', 'layout')
-  redirect('/')
+  redirect(`/register/verify?email=${encodeURIComponent(email)}`)
 }
 
 export async function signOut() {
@@ -135,4 +141,111 @@ export async function deleteAccount() {
 
   revalidatePath('/', 'layout')
   redirect('/login')
+}
+
+export async function verifyRegistration(formData: FormData) {
+  const email = formData.get('email') as string
+  const token = formData.get('token') as string
+
+  if (!email || !token) {
+    return { error: 'Email and verification code are required' }
+  }
+
+  const supabase = await createClient()
+
+  const { error } = await supabase.auth.verifyOtp({
+    email,
+    token,
+    type: 'signup',
+  })
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  revalidatePath('/', 'layout')
+  redirect('/')
+}
+
+export async function resendVerification(formData: FormData) {
+  const email = formData.get('email') as string
+
+  if (!email) {
+    return { error: 'Email is required' }
+  }
+
+  const supabase = await createClient()
+
+  const { error } = await supabase.auth.resend({
+    type: 'signup',
+    email,
+  })
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  return { success: true }
+}
+
+export async function requestPasswordReset(formData: FormData) {
+  const email = formData.get('email') as string
+
+  if (!email) {
+    return { error: 'Email is required' }
+  }
+
+  const supabase = await createClient()
+
+  const { error } = await supabase.auth.resetPasswordForEmail(email)
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  redirect(`/forgot-password/verify?email=${encodeURIComponent(email)}`)
+}
+
+export async function resetPasswordWithOtp(formData: FormData) {
+  const email = formData.get('email') as string
+  const token = formData.get('token') as string
+  const password = formData.get('password') as string
+
+  if (!email || !token || !password) {
+    return { error: 'All fields are required' }
+  }
+
+  if (password.length < 8) {
+    return { error: 'Password must be at least 8 characters' }
+  }
+
+  const supabase = await createClient()
+
+  // 1. Check if we ALREADY established a session from a previous failed attempt (e.g. password too weak)
+  const { data: { user } } = await supabase.auth.getUser()
+
+  // 2. If not logged in as this user, verify OTP to establish a session
+  if (!user || user.email !== email) {
+    const { error: verifyError } = await supabase.auth.verifyOtp({
+      email,
+      token,
+      type: 'recovery',
+    })
+
+    if (verifyError) {
+      return { error: verifyError.message }
+    }
+  }
+
+  // 3. Since session is established, update the password
+  const { error: updateError } = await supabase.auth.updateUser({
+    password: password
+  })
+
+  if (updateError) {
+    return { error: updateError.message }
+  }
+
+  revalidatePath('/', 'layout')
+  redirect('/')
 }
