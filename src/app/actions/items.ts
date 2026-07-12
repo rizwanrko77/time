@@ -22,6 +22,7 @@ export async function createItem(formData: FormData) {
   let noticePeriodDays = formData.get('notice_period_days') ? parseInt(formData.get('notice_period_days') as string, 10) : null
   const endDateStr = formData.get('end_date') as string
   const endDate = endDateStr ? new Date(endDateStr).toISOString() : null
+  const showStatsPublicly = formData.get('show_stats_publicly') === 'on'
   
   if (!title || isNaN(rawHours) || rawHours <= 0 || !period) {
     return { error: 'Invalid input data' }
@@ -69,6 +70,7 @@ export async function createItem(formData: FormData) {
     notice_period_days: noticePeriodDays,
     end_date: endDate,
     sort_order: sortOrder,
+    show_stats_publicly: showStatsPublicly,
   })
 
   if (error) {
@@ -97,6 +99,7 @@ export async function updateItem(id: string, formData: FormData) {
   let noticePeriodDays = formData.get('notice_period_days') ? parseInt(formData.get('notice_period_days') as string, 10) : null
   const endDateStr = formData.get('end_date') as string
   const endDate = endDateStr ? new Date(endDateStr).toISOString() : null
+  const showStatsPublicly = formData.get('show_stats_publicly') === 'on'
   
   if (!title || isNaN(rawHours) || rawHours <= 0 || !period) {
     return { error: 'Invalid input data' }
@@ -132,6 +135,7 @@ export async function updateItem(id: string, formData: FormData) {
       notice_period_days: noticePeriodDays,
       end_date: endDate,
       is_active: true,
+      show_stats_publicly: showStatsPublicly,
     })
     .eq('id', id)
     .eq('user_id', user.id)

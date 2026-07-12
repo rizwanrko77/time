@@ -100,6 +100,12 @@ export function DashboardClient({ profile, items, timeEntries }: DashboardProps)
     let stats_7d: number | null = null
     let stats_30d: number | null = null
     let stats_90d: number | null = null
+    let raw_spent7: number | null = null
+    let raw_spent30: number | null = null
+    let raw_spent90: number | null = null
+    let raw_alloc7: number | null = null
+    let raw_alloc30: number | null = null
+    let raw_alloc90: number | null = null
 
     if (item.tracking_mode === 'manual_track' && item.allocated_hours > 0) {
       let spent7 = 0
@@ -127,9 +133,16 @@ export function DashboardClient({ profile, items, timeEntries }: DashboardProps)
       stats_7d = Math.round((spent7 / alloc7) * 100)
       stats_30d = Math.round((spent30 / alloc30) * 100)
       stats_90d = Math.round((spent90 / alloc90) * 100)
+      
+      raw_spent7 = spent7
+      raw_spent30 = spent30
+      raw_spent90 = spent90
+      raw_alloc7 = alloc7
+      raw_alloc30 = alloc30
+      raw_alloc90 = alloc90
     }
 
-    return { ...item, allocView, spentView, completion, isRunning, isExpired, stats_7d, stats_30d, stats_90d }
+    return { ...item, allocView, spentView, completion, isRunning, isExpired, stats_7d, stats_30d, stats_90d, raw_spent7, raw_spent30, raw_spent90, raw_alloc7, raw_alloc30, raw_alloc90 }
   })
 
   const activeItems = processedItems.filter(item => !item.isExpired && item.is_active)
@@ -317,15 +330,24 @@ export function DashboardClient({ profile, items, timeEntries }: DashboardProps)
                                     <div className="flex flex-col space-y-3">
                                       <div>
                                         <span className="text-gray-500 dark:text-zinc-400 block mb-0.5">Current Cycle (7d)</span>
-                                        <span className="font-bold text-gray-900 dark:text-white text-lg">{item.stats_7d}%</span>
+                                        <div className="flex items-baseline gap-2">
+                                          <span className="font-bold text-gray-900 dark:text-white text-lg">{item.stats_7d}%</span>
+                                          <span className="text-xs text-gray-400">({item.raw_spent7?.toFixed(1)}h / {item.raw_alloc7?.toFixed(1)}h)</span>
+                                        </div>
                                       </div>
                                       <div>
                                         <span className="text-gray-500 dark:text-zinc-400 block mb-0.5">30-Day Average</span>
-                                        <span className="font-bold text-blue-600 dark:text-blue-400 text-lg">{item.stats_30d}%</span>
+                                        <div className="flex items-baseline gap-2">
+                                          <span className="font-bold text-blue-600 dark:text-blue-400 text-lg">{item.stats_30d}%</span>
+                                          <span className="text-xs text-gray-400">({item.raw_spent30?.toFixed(1)}h / {item.raw_alloc30?.toFixed(1)}h)</span>
+                                        </div>
                                       </div>
                                       <div>
                                         <span className="text-gray-500 dark:text-zinc-400 block mb-0.5">90-Day Average</span>
-                                        <span className="font-bold text-purple-600 dark:text-purple-400 text-lg">{item.stats_90d}%</span>
+                                        <div className="flex items-baseline gap-2">
+                                          <span className="font-bold text-purple-600 dark:text-purple-400 text-lg">{item.stats_90d}%</span>
+                                          <span className="text-xs text-gray-400">({item.raw_spent90?.toFixed(1)}h / {item.raw_alloc90?.toFixed(1)}h)</span>
+                                        </div>
                                       </div>
                                     </div>
                                     <div className="absolute -top-1.5 sm:-bottom-1.5 sm:top-auto right-2 sm:left-1/2 sm:-translate-x-1/2 w-3 h-3 bg-white dark:bg-zinc-800 border-t border-l sm:border-t-0 sm:border-l-0 sm:border-b sm:border-r border-gray-200 dark:border-zinc-700 transform rotate-45"></div>

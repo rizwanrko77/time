@@ -33,6 +33,7 @@ export interface Item {
   end_date: string | null;
   sort_order: number;
   is_active: boolean;
+  show_stats_publicly: boolean;
   created_at: string;
 }
 

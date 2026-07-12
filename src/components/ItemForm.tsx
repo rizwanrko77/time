@@ -16,6 +16,7 @@ type ItemFormProps = {
     notice_period_days: number | null
     end_date: string | null
     is_active?: boolean
+    show_stats_publicly?: boolean
   }
 }
 
@@ -222,6 +223,24 @@ export function ItemForm({ item }: ItemFormProps) {
               defaultValue={item?.notice_period_days ?? 0}
               className="mt-1 block w-full rounded-lg border border-gray-300 dark:border-zinc-700 px-3 py-2 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white sm:text-sm"
             />
+            
+            <div className="mt-4 flex items-start bg-gray-50 dark:bg-zinc-800/50 p-3 rounded-lg border border-gray-200 dark:border-zinc-700">
+              <div className="flex h-5 items-center">
+                <input
+                  id="show_stats_publicly"
+                  name="show_stats_publicly"
+                  type="checkbox"
+                  defaultChecked={item?.show_stats_publicly ?? true}
+                  className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-zinc-600 dark:bg-zinc-700 dark:checked:bg-blue-500 cursor-pointer"
+                />
+              </div>
+              <div className="ml-3 text-sm">
+                <label htmlFor="show_stats_publicly" className="font-medium text-gray-700 dark:text-zinc-300 cursor-pointer">
+                  Show completion stats publicly
+                </label>
+                <p className="text-gray-500 dark:text-zinc-400 text-xs mt-0.5">If unchecked, this item will display "—" instead of its completion rate on your public page.</p>
+              </div>
+            </div>
           </div>
         )}
       </div>
