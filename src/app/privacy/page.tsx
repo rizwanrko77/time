@@ -22,7 +22,7 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mt-8 mb-3">1. Introduction</h2>
             <p>
-              TIME (&quot;we&quot;, &quot;our&quot;, &quot;us&quot;) is a time-allocation and availability-sharing tool operated by iamrizwan.com. 
+              TIME (&quot;we&quot;, &quot;our&quot;, &quot;us&quot;) is a time-allocation and availability-sharing tool operated by rkospl.com. 
               This Privacy Policy explains how we collect, use, and protect your personal data in compliance with the 
               General Data Protection Regulation (GDPR) and other applicable data protection laws.
             </p>
@@ -131,8 +131,8 @@ export default function PrivacyPage() {
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mt-8 mb-3">11. Contact</h2>
             <p>
               If you have any questions about this Privacy Policy or your data, please contact us at{' '}
-              <a href="https://iamrizwan.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                iamrizwan.com
+              <a href="https://rkospl.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                rkospl.com
               </a>.
             </p>
           </section>

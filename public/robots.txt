@@ -4,4 +4,4 @@ Disallow: /settings
 Disallow: /history
 Disallow: /items/
 
-Sitemap: https://time.iamrizwan.com/sitemap.xml
+Sitemap: https://time.rkospl.com/sitemap.xml

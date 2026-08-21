@@ -2,7 +2,7 @@ import { MetadataRoute } from 'next'
  
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'TIME - by iamrizwan.com',
+    name: 'TIME - by rkospl.com',
     short_name: 'TIME',
     description: 'Allocate your time across commitments, track hours with a built-in timer.',
     start_url: '/',

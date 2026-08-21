@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     openGraph: {
       title: profile.page_title || `${profile.display_name}'s Availability`,
       description: profile.page_desc || `See ${profile.display_name}'s current time allocation and availability.`,
-      url: `https://time.iamrizwan.com/${slug}`,
+      url: `https://time.rkospl.com/${slug}`,
       type: 'profile',
     },
   }
@@ -235,12 +235,12 @@ export default async function PublicPage({ params, searchParams }: { params: Pro
         <p className="text-sm text-gray-500 dark:text-zinc-400">
           Manage your time with ease at{' '}
           <a 
-            href="https://time.iamrizwan.com" 
+            href="https://time.rkospl.com" 
             target="_blank" 
             rel="noopener noreferrer"
             className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline transition-colors"
           >
-            time.iamrizwan.com
+            time.rkospl.com
           </a>
         </p>
       </div>

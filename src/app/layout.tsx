@@ -13,19 +13,19 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://time.iamrizwan.com'),
+  metadataBase: new URL('https://time.rkospl.com'),
   title: {
     default: "TIME - Allocate, track and share your availability with ease",
     template: "%s | TIME",
   },
   description: "Allocate your time across commitments, track hours with a built-in timer, and share a live availability page so others can see when you're free.",
   keywords: ["time management", "availability", "time tracking", "scheduling", "freelancer tools"],
-  authors: [{ name: "Rizwan", url: "https://iamrizwan.com" }],
-  creator: "Rizwan",
+  authors: [{ name: "RKOSPL", url: "https://rkospl.com" }],
+  creator: "RKOSPL",
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://time.iamrizwan.com",
+    url: "https://time.rkospl.com",
     siteName: "TIME",
     title: "TIME - Allocate, track and share your availability with ease",
     description: "Allocate your time across commitments, track hours with a built-in timer, and share a live availability page so others can see when you're free.",

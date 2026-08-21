@@ -23,7 +23,7 @@ export default function TermsPage() {
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mt-8 mb-3">1. Acceptance of Terms</h2>
             <p>
               By creating an account or using TIME (&quot;the Service&quot;), you agree to be bound by these Terms of Service. 
-              If you do not agree to these terms, please do not use the Service. The Service is operated by iamrizwan.com.
+              If you do not agree to these terms, please do not use the Service. The Service is operated by rkospl.com.
             </p>
           </section>
 
@@ -101,7 +101,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mt-8 mb-3">8. Intellectual Property</h2>
             <p>
-              The Service, including its design, code, and branding, is the property of iamrizwan.com. You may not 
+              The Service, including its design, code, and branding, is the property of rkospl.com. You may not 
               copy, modify, or distribute any part of the Service without prior written consent. Your data remains yours — 
               we claim no ownership over the content you create.
             </p>
@@ -119,8 +119,8 @@ export default function TermsPage() {
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mt-8 mb-3">10. Contact</h2>
             <p>
               If you have any questions about these Terms, please contact us at{' '}
-              <a href="https://iamrizwan.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                iamrizwan.com
+              <a href="https://rkospl.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                rkospl.com
               </a>.
             </p>
           </section>
