@@ -5,7 +5,7 @@ import { PublicNavbar } from '@/components/PublicNavbar'
 
 export const metadata: Metadata = {
   title: 'Terms of Service',
-  description: 'Terms of Service for TIME — rules and guidelines for using our platform.',
+  description: 'Terms of Service for TIME by RKOSPL — rules and guidelines for using our platform.',
 }
 
 export default function TermsPage() {
@@ -22,8 +22,8 @@ export default function TermsPage() {
           <section>
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mt-8 mb-3">1. Acceptance of Terms</h2>
             <p>
-              By creating an account or using TIME (&quot;the Service&quot;), you agree to be bound by these Terms of Service. 
-              If you do not agree to these terms, please do not use the Service. The Service is operated by rkospl.com.
+              By creating an account or using TIME by RKOSPL (&quot;the Service&quot;), you agree to be bound by these Terms of Service. 
+              If you do not agree to these terms, please do not use the Service. The Service is operated by RKOSPL.
             </p>
           </section>
 
@@ -101,7 +101,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mt-8 mb-3">8. Intellectual Property</h2>
             <p>
-              The Service, including its design, code, and branding, is the property of rkospl.com. You may not 
+              The Service, including its design, code, and branding, is the property of RKOSPL. You may not 
               copy, modify, or distribute any part of the Service without prior written consent. Your data remains yours — 
               we claim no ownership over the content you create.
             </p>

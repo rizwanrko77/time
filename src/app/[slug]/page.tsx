@@ -240,7 +240,7 @@ export default async function PublicPage({ params, searchParams }: { params: Pro
             rel="noopener noreferrer"
             className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline transition-colors"
           >
-            time.rkospl.com
+            TIME by RKOSPL
           </a>
         </p>
       </div>

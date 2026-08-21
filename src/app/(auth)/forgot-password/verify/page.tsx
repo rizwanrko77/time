@@ -56,7 +56,7 @@ function ForgotPasswordVerifyContent() {
           <p className="mt-2 text-center text-sm text-gray-600 dark:text-zinc-400">
             {isOtpVerified 
               ? 'Your email has been verified. Choose a strong new password.' 
-              : <span>We sent a 6-digit recovery code to <strong>{email}</strong></span>}
+              : <span>We sent a recovery code to <strong>{email}</strong></span>}
           </p>
         </div>
         
@@ -69,17 +69,17 @@ function ForgotPasswordVerifyContent() {
             ) : (
               <div>
                 <label htmlFor="token" className="block text-sm font-medium text-gray-700 dark:text-zinc-300">
-                  6-Digit Recovery Code
+                  Recovery Code
                 </label>
                 <input
                   id="token"
                   name="token"
                   type="text"
                   required
-                  maxLength={6}
+                  maxLength={8}
                   autoComplete="one-time-code"
                   className="mt-1 block w-full rounded-lg border border-gray-300 dark:border-zinc-700 px-3 py-3 text-center tracking-widest text-xl font-mono bg-white dark:bg-zinc-800 text-gray-900 dark:text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  placeholder="123456"
+                  placeholder="12345678"
                 />
               </div>
             )}

@@ -70,7 +70,7 @@ function RegisterVerifyContent() {
             Verify your email
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600 dark:text-zinc-400">
-            We sent a 6-digit code to <strong>{email}</strong>
+            We sent a verification code to <strong>{email}</strong>
           </p>
         </div>
         
@@ -87,10 +87,10 @@ function RegisterVerifyContent() {
                 name="token"
                 type="text"
                 required
-                maxLength={6}
+                maxLength={8}
                 autoComplete="one-time-code"
                 className="mt-1 block w-full rounded-lg border border-gray-300 dark:border-zinc-700 px-3 py-3 text-center tracking-widest text-xl font-mono bg-white dark:bg-zinc-800 text-gray-900 dark:text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                placeholder="123456"
+                placeholder="12345678"
               />
             </div>
           </div>

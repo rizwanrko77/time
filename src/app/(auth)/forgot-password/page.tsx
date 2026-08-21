@@ -21,7 +21,7 @@ export default function ForgotPasswordPage() {
             Reset Password
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600 dark:text-zinc-400">
-            Enter your email address to receive a 6-digit recovery code
+            Enter your email address to receive a recovery code
           </p>
         </div>
         

@@ -5,7 +5,7 @@ import { PublicNavbar } from '@/components/PublicNavbar'
 
 export const metadata: Metadata = {
   title: 'Privacy Policy',
-  description: 'Privacy Policy for TIME — how we handle your data.',
+  description: 'Privacy Policy for TIME by RKOSPL — how we handle your data.',
 }
 
 export default function PrivacyPage() {
@@ -22,7 +22,7 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mt-8 mb-3">1. Introduction</h2>
             <p>
-              TIME (&quot;we&quot;, &quot;our&quot;, &quot;us&quot;) is a time-allocation and availability-sharing tool operated by rkospl.com. 
+              TIME by RKOSPL (&quot;we&quot;, &quot;our&quot;, &quot;us&quot;) is a time-allocation and availability-sharing tool operated by RKOSPL. 
               This Privacy Policy explains how we collect, use, and protect your personal data in compliance with the 
               General Data Protection Regulation (GDPR) and other applicable data protection laws.
             </p>

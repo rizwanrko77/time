@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL('https://time.rkospl.com'),
   title: {
-    default: "TIME - Allocate, track and share your availability with ease",
-    template: "%s | TIME",
+    default: "TIME by RKOSPL - Allocate, track and share your availability with ease",
+    template: "%s | TIME by RKOSPL",
   },
   description: "Allocate your time across commitments, track hours with a built-in timer, and share a live availability page so others can see when you're free.",
   keywords: ["time management", "availability", "time tracking", "scheduling", "freelancer tools"],
@@ -26,13 +26,13 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: "https://time.rkospl.com",
-    siteName: "TIME",
-    title: "TIME - Allocate, track and share your availability with ease",
+    siteName: "TIME by RKOSPL",
+    title: "TIME by RKOSPL - Allocate, track and share your availability with ease",
     description: "Allocate your time across commitments, track hours with a built-in timer, and share a live availability page so others can see when you're free.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "TIME - Allocate, track and share your availability with ease",
+    title: "TIME by RKOSPL - Allocate, track and share your availability with ease",
     description: "Allocate your time across commitments, track hours with a built-in timer, and share a live availability page.",
   },
   robots: {
