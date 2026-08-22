@@ -54,15 +54,15 @@ function ForgotPasswordVerifyContent() {
             {isOtpVerified ? 'Enter New Password' : 'Verify & Set Password'}
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600 dark:text-zinc-400">
-            {isOtpVerified 
-              ? 'Your email has been verified. Choose a strong new password.' 
+            {isOtpVerified
+              ? 'Your email has been verified. Choose a strong new password.'
               : <span>We sent a recovery code to <strong>{email}</strong></span>}
           </p>
         </div>
-        
+
         <form className="mt-8 space-y-6" action={formAction}>
           <input type="hidden" name="email" value={email} />
-          
+
           <div className="space-y-4">
             {isOtpVerified ? (
               <input type="hidden" name="token" value="000000" />
@@ -79,7 +79,7 @@ function ForgotPasswordVerifyContent() {
                   maxLength={8}
                   autoComplete="one-time-code"
                   className="mt-1 block w-full rounded-lg border border-gray-300 dark:border-zinc-700 px-3 py-3 text-center tracking-widest text-xl font-mono bg-white dark:bg-zinc-800 text-gray-900 dark:text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  placeholder="12345678"
+                  placeholder="123456"
                 />
               </div>
             )}

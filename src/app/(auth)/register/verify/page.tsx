@@ -9,7 +9,7 @@ import { Suspense } from 'react'
 function RegisterVerifyContent() {
   const searchParams = useSearchParams()
   const email = searchParams?.get('email') || ''
-  
+
   const [cooldown, setCooldown] = useState(60)
   const [isResending, setIsResending] = useState(false)
   const [resendMessage, setResendMessage] = useState('')
@@ -35,12 +35,12 @@ function RegisterVerifyContent() {
     if (cooldown > 0 || isResending || !email) return
     setIsResending(true)
     setResendMessage('')
-    
+
     const formData = new FormData()
     formData.append('email', email)
-    
+
     const result = await resendVerification(formData)
-    
+
     if (result?.error) {
       setResendMessage(result.error)
     } else {
@@ -73,10 +73,10 @@ function RegisterVerifyContent() {
             We sent a verification code to <strong>{email}</strong>
           </p>
         </div>
-        
+
         <form className="mt-8 space-y-6" action={formAction}>
           <input type="hidden" name="email" value={email} />
-          
+
           <div className="space-y-4">
             <div>
               <label htmlFor="token" className="block text-sm font-medium text-gray-700 dark:text-zinc-300">
@@ -90,7 +90,7 @@ function RegisterVerifyContent() {
                 maxLength={8}
                 autoComplete="one-time-code"
                 className="mt-1 block w-full rounded-lg border border-gray-300 dark:border-zinc-700 px-3 py-3 text-center tracking-widest text-xl font-mono bg-white dark:bg-zinc-800 text-gray-900 dark:text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                placeholder="12345678"
+                placeholder="123456"
               />
             </div>
           </div>
@@ -111,18 +111,17 @@ function RegisterVerifyContent() {
         </form>
 
         <div className="mt-6 text-center space-y-4">
-          <button 
+          <button
             onClick={handleResend}
             disabled={cooldown > 0 || isResending}
-            className={`text-sm font-medium transition-colors ${
-              cooldown > 0 
-                ? 'text-gray-400 dark:text-zinc-500 cursor-not-allowed' 
+            className={`text-sm font-medium transition-colors ${cooldown > 0
+                ? 'text-gray-400 dark:text-zinc-500 cursor-not-allowed'
                 : 'text-blue-600 hover:text-blue-500'
-            }`}
+              }`}
           >
             {isResending ? 'Sending...' : cooldown > 0 ? `Resend code in ${cooldown}s` : 'Resend code'}
           </button>
-          
+
           {resendMessage && (
             <p className={`text-xs ${resendMessage.includes('error') || resendMessage.includes('wait') ? 'text-red-500' : 'text-green-600 dark:text-green-400'}`}>
               {resendMessage}
