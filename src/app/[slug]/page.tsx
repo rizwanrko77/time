@@ -136,7 +136,11 @@ export default async function PublicPage({ params, searchParams }: { params: Pro
                     </div>
                   </td>
                   <td className="py-4 text-center whitespace-nowrap font-medium text-gray-900 dark:text-white">
-                    {item.allocated.toFixed(1)}h
+                    {item.allocated === 0 ? (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">Unallocated</span>
+                    ) : (
+                      `${item.allocated.toFixed(1)}h`
+                    )}
                   </td>
                   <td className="py-4 text-center text-sm text-gray-600 dark:text-zinc-400">
                     <div>{item.notice_days === null ? 'N/A' : item.notice_days === 0 ? 'At will' : `${item.notice_days} days`}</div>

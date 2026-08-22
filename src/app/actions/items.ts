@@ -14,21 +14,26 @@ export async function createItem(formData: FormData) {
   const title = formData.get('title') as string
   const description = formData.get('description') as string || null
   const link = formData.get('link') as string || null
-  const trackingMode = formData.get('tracking_mode') as 'assumed_spent' | 'manual_track'
+  let trackingMode = formData.get('tracking_mode') as 'assumed_spent' | 'manual_track'
   
-  const rawHours = parseFloat(formData.get('allocated_hours') as string)
+  const rawHours = parseFloat(formData.get('allocated_hours') as string) || 0
   const period = formData.get('period') as 'day' | 'week' | 'month'
   
   let noticePeriodDays = formData.get('notice_period_days') ? parseInt(formData.get('notice_period_days') as string, 10) : null
   const endDateStr = formData.get('end_date') as string
   const endDate = endDateStr ? new Date(endDateStr).toISOString() : null
   const showStatsPublicly = formData.get('show_stats_publicly') === 'on'
+  const showOnPublic = formData.get('show_on_public') === 'on'
   
-  if (!title || isNaN(rawHours) || rawHours <= 0 || !period) {
+  if (!title || rawHours < 0) {
     return { error: 'Invalid input data' }
   }
 
-  if (trackingMode === 'assumed_spent') {
+  // Unallocated items (0 hours): force manual_track and no notice period
+  if (rawHours === 0) {
+    trackingMode = 'manual_track'
+    noticePeriodDays = null
+  } else if (trackingMode === 'assumed_spent') {
     noticePeriodDays = null
   } else if (noticePeriodDays === null || isNaN(noticePeriodDays) || noticePeriodDays < 0) {
     return { error: 'Valid notice period required for manual track mode' }
@@ -71,6 +76,7 @@ export async function createItem(formData: FormData) {
     end_date: endDate,
     sort_order: sortOrder,
     show_stats_publicly: showStatsPublicly,
+    show_on_public: showOnPublic,
   })
 
   if (error) {
@@ -91,21 +97,26 @@ export async function updateItem(id: string, formData: FormData) {
   const title = formData.get('title') as string
   const description = formData.get('description') as string || null
   const link = formData.get('link') as string || null
-  const trackingMode = formData.get('tracking_mode') as 'assumed_spent' | 'manual_track'
+  let trackingMode = formData.get('tracking_mode') as 'assumed_spent' | 'manual_track'
   
-  const rawHours = parseFloat(formData.get('allocated_hours') as string)
+  const rawHours = parseFloat(formData.get('allocated_hours') as string) || 0
   const period = formData.get('period') as 'day' | 'week' | 'month'
   
   let noticePeriodDays = formData.get('notice_period_days') ? parseInt(formData.get('notice_period_days') as string, 10) : null
   const endDateStr = formData.get('end_date') as string
   const endDate = endDateStr ? new Date(endDateStr).toISOString() : null
   const showStatsPublicly = formData.get('show_stats_publicly') === 'on'
+  const showOnPublic = formData.get('show_on_public') === 'on'
   
-  if (!title || isNaN(rawHours) || rawHours <= 0 || !period) {
+  if (!title || rawHours < 0) {
     return { error: 'Invalid input data' }
   }
 
-  if (trackingMode === 'assumed_spent') {
+  // Unallocated items (0 hours): force manual_track and no notice period
+  if (rawHours === 0) {
+    trackingMode = 'manual_track'
+    noticePeriodDays = null
+  } else if (trackingMode === 'assumed_spent') {
     noticePeriodDays = null
   } else if (noticePeriodDays === null || isNaN(noticePeriodDays) || noticePeriodDays < 0) {
     return { error: 'Valid notice period required for manual track mode' }
@@ -136,6 +147,7 @@ export async function updateItem(id: string, formData: FormData) {
       end_date: endDate,
       is_active: true,
       show_stats_publicly: showStatsPublicly,
+      show_on_public: showOnPublic,
     })
     .eq('id', id)
     .eq('user_id', user.id)

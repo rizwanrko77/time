@@ -43,6 +43,7 @@ CREATE TABLE public.items (
   sort_order          integer not null default 0,
   is_active           boolean not null default true,
   show_stats_publicly boolean not null default true,
+  show_on_public      boolean not null default true,
   created_at          timestamptz not null default now()
 );
 CREATE INDEX items_user_idx ON public.items(user_id);
@@ -264,36 +265,39 @@ BEGIN
       v_potential_avail := v_potential_avail + v_alloc_view;
     END IF;
     
-    -- ALWAYS RESET STATS TO NULL SO THEY DON'T LEAK BETWEEN ITEMS
-    v_7d := NULL;
-    v_30d := NULL;
-    v_90d := NULL;
-    v_120d := NULL;
-    
-    -- ONLY CALCULATE STATS IF TRACKING IS MANUAL AND THE USER WANTS THEM SHOWN PUBLICLY
-    IF v_item.tracking_mode = 'manual_track' AND v_item.show_stats_publicly = true THEN
-      v_days_active := EXTRACT(day FROM (NOW() - v_item.created_at));
+    -- Only add visible items to the public items list
+    IF v_item.show_on_public = true THEN
+      -- ALWAYS RESET STATS TO NULL SO THEY DON'T LEAK BETWEEN ITEMS
+      v_7d := NULL;
+      v_30d := NULL;
+      v_90d := NULL;
+      v_120d := NULL;
       
-      -- Calculate multi-period stats
-      v_7d := public.calculate_period_completion(v_item.id, 7);
+      -- ONLY CALCULATE STATS IF TRACKING IS MANUAL AND THE USER WANTS THEM SHOWN PUBLICLY
+      IF v_item.tracking_mode = 'manual_track' AND v_item.show_stats_publicly = true THEN
+        v_days_active := EXTRACT(day FROM (NOW() - v_item.created_at));
+        
+        -- Calculate multi-period stats
+        v_7d := public.calculate_period_completion(v_item.id, 7);
+        
+        IF v_days_active >= 30 THEN v_30d := public.calculate_period_completion(v_item.id, 30); END IF;
+        IF v_days_active >= 90 THEN v_90d := public.calculate_period_completion(v_item.id, 90); END IF;
+        IF v_days_active >= 120 THEN v_120d := public.calculate_period_completion(v_item.id, 120); END IF;
+      END IF;
       
-      IF v_days_active >= 30 THEN v_30d := public.calculate_period_completion(v_item.id, 30); END IF;
-      IF v_days_active >= 90 THEN v_90d := public.calculate_period_completion(v_item.id, 90); END IF;
-      IF v_days_active >= 120 THEN v_120d := public.calculate_period_completion(v_item.id, 120); END IF;
+      v_items_json := v_items_json || jsonb_build_object(
+        'title', v_item.title,
+        'description', v_item.description,
+        'link', v_item.link,
+        'allocated', v_alloc_view,
+        'stats_7d', v_7d,
+        'stats_30d', v_30d,
+        'stats_90d', v_90d,
+        'stats_120d', v_120d,
+        'notice_days', v_item.notice_period_days,
+        'end_date', v_item.end_date
+      );
     END IF;
-    
-    v_items_json := v_items_json || jsonb_build_object(
-      'title', v_item.title,
-      'description', v_item.description,
-      'link', v_item.link,
-      'allocated', v_alloc_view,
-      'stats_7d', v_7d,
-      'stats_30d', v_30d,
-      'stats_90d', v_90d,
-      'stats_120d', v_120d,
-      'notice_days', v_item.notice_period_days,
-      'end_date', v_item.end_date
-    );
   END LOOP;
 
   RETURN json_build_object(

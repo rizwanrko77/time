@@ -34,6 +34,7 @@ export interface Item {
   sort_order: number;
   is_active: boolean;
   show_stats_publicly: boolean;
+  show_on_public: boolean;
   created_at: string;
 }
 

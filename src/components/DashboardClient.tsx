@@ -301,6 +301,17 @@ export function DashboardClient({ profile, items, timeEntries }: DashboardProps)
                               </div>
                             </button>
                           )}
+                          {item.show_on_public === false && (
+                            <span 
+                              className="ml-2 inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 border border-gray-200 dark:border-zinc-700" 
+                              title="Hidden from public page (still counts toward availability)"
+                            >
+                              <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
+                              </svg>
+                              Hidden
+                            </span>
+                          )}
                         </div>
                       </td>
                     <td className="p-4">
@@ -309,7 +320,11 @@ export function DashboardClient({ profile, items, timeEntries }: DashboardProps)
                       </span>
                     </td>
                     <td className="p-4 text-center whitespace-nowrap text-gray-900 dark:text-white font-medium">
-                      {item.allocView.toFixed(1)}h <span className="text-xs text-gray-500 dark:text-zinc-400 font-normal">/ {view}</span>
+                      {item.allocView === 0 ? (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">Unallocated</span>
+                      ) : (
+                        <>{item.allocView.toFixed(1)}h <span className="text-xs text-gray-500 dark:text-zinc-400 font-normal">/ {view}</span></>
+                      )}
                     </td>
                     <td className="p-4">
                       {item.completion !== null ? (

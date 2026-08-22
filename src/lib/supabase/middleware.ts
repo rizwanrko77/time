@@ -36,7 +36,9 @@ export async function updateSession(request: NextRequest) {
   // / (dashboard), /settings, /items/* are protected
   // /[slug] is public (handled in route, but we shouldn't block it here)
 
-  const isAuthPage = request.nextUrl.pathname.startsWith('/login') || request.nextUrl.pathname.startsWith('/register')
+  const isAuthPage = request.nextUrl.pathname.startsWith('/login') || 
+                     request.nextUrl.pathname.startsWith('/register') ||
+                     request.nextUrl.pathname.startsWith('/forgot-password')
   
   // Public pages accessible without auth
   const isPublicPage = request.nextUrl.pathname === '/' || 

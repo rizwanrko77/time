@@ -160,10 +160,16 @@ export function HistoryClient({ profile, items, timeEntries }: Props) {
                     </span>
                   </td>
                   <td className="p-4 text-center whitespace-nowrap text-gray-900 dark:text-white font-medium">
-                    {item.allocView.toFixed(1)}h
-                    <span className="text-xs text-gray-500 dark:text-zinc-400 block font-normal">
-                      /{profile.default_view}
-                    </span>
+                    {item.allocView === 0 ? (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">Unallocated</span>
+                    ) : (
+                      <>
+                        {item.allocView.toFixed(1)}h
+                        <span className="text-xs text-gray-500 dark:text-zinc-400 block font-normal">
+                          /{profile.default_view}
+                        </span>
+                      </>
+                    )}
                   </td>
                   <td className="p-4">
                     {item.tracking_mode === 'manual_track' && item.lifetimeAllocated !== null && item.lifetimeSpent !== null ? (

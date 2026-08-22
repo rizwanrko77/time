@@ -180,6 +180,17 @@ export function ItemViewClient({ item, timeEntries, profile }: Props) {
                   Active
                 </span>
               )}
+              {item.show_on_public === false && (
+                <span 
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 border border-gray-200 dark:border-zinc-700" 
+                  title="Hidden from public page"
+                >
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
+                  </svg>
+                  Hidden from Public Page
+                </span>
+              )}
             </div>
             {item.description && (
               <p className="mt-2 text-gray-600 dark:text-zinc-400 whitespace-pre-wrap">{item.description}</p>
@@ -229,7 +240,11 @@ export function ItemViewClient({ item, timeEntries, profile }: Props) {
           <div>
             <p className="text-sm text-gray-500 dark:text-zinc-400">Allocated</p>
             <p className="text-lg font-semibold text-gray-900 dark:text-white">
-              {item.allocated_hours}h / {item.allocated_period}
+              {item.allocated_hours === 0 ? (
+                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">Unallocated</span>
+              ) : (
+                `${item.allocated_hours}h / ${item.allocated_period}`
+              )}
             </p>
           </div>
           <div>

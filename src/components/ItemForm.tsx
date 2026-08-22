@@ -17,6 +17,7 @@ type ItemFormProps = {
     end_date: string | null
     is_active?: boolean
     show_stats_publicly?: boolean
+    show_on_public?: boolean
   }
 }
 
@@ -34,6 +35,12 @@ export function ItemForm({ item }: ItemFormProps) {
 
   const [title, setTitle] = useState(item?.title || '')
   const maxTitle = 50
+
+  const [allocatedHoursStr, setAllocatedHoursStr] = useState<string>(item?.allocated_hours !== undefined ? String(item.allocated_hours) : '')
+  const allocatedHoursNum = parseFloat(allocatedHoursStr) || 0
+  const isUnallocated = allocatedHoursNum === 0
+
+  const [showOnPublic, setShowOnPublic] = useState<boolean>(item?.show_on_public ?? true)
 
   const [isDeleting, startTransition] = useTransition()
 
@@ -138,24 +145,28 @@ export function ItemForm({ item }: ItemFormProps) {
               />
               <span className="ml-2 text-sm text-gray-700 dark:text-zinc-300">Manual track (timer)</span>
             </label>
-            <label className="flex items-center">
+            <label className={`flex items-center ${isUnallocated ? 'opacity-40 cursor-not-allowed' : ''}`}>
               <input
                 type="radio"
                 name="tracking_mode"
                 value="assumed_spent"
                 checked={trackingMode === 'assumed_spent'}
-                onChange={() => setTrackingMode('assumed_spent')}
+                onChange={() => !isUnallocated && setTrackingMode('assumed_spent')}
+                disabled={isUnallocated}
                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
               />
               <span className="ml-2 text-sm text-gray-700 dark:text-zinc-300">Assumed spent</span>
             </label>
           </div>
+          {isUnallocated && (
+            <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">Unallocated items use manual tracking only.</p>
+          )}
         </fieldset>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label htmlFor="allocated_hours" className="block text-sm font-medium text-gray-700 dark:text-zinc-300">
-              Allocated Time <span className="text-red-500">*</span>
+              Allocated Hours <span className="text-gray-400 text-xs font-normal">(0 = unallocated)</span>
             </label>
             <div className="mt-1 flex space-x-2">
               <input
@@ -163,24 +174,43 @@ export function ItemForm({ item }: ItemFormProps) {
                 name="allocated_hours"
                 type="number"
                 step="0.1"
-                min="0.1"
-                required
-                defaultValue={item?.allocated_hours}
+                min="0"
+                value={allocatedHoursStr}
+                onChange={(e) => {
+                  setAllocatedHoursStr(e.target.value)
+                  const val = parseFloat(e.target.value)
+                  // Force manual_track when switching to unallocated
+                  if (isNaN(val) || val === 0) {
+                    setTrackingMode('manual_track')
+                  }
+                }}
                 className="block w-full rounded-lg border border-gray-300 dark:border-zinc-700 px-3 py-2 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white sm:text-sm"
-                placeholder="e.g. 10.5"
+                placeholder="e.g. 10.5 (or 0 for unallocated)"
               />
-              <span className="flex items-center text-gray-500 dark:text-zinc-400">per</span>
-              <select
-                name="period"
-                value={period}
-                onChange={(e) => setPeriod(e.target.value as 'day' | 'week' | 'month')}
-                className="rounded-lg border border-gray-300 dark:border-zinc-700 px-3 py-2 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white sm:text-sm"
-              >
-                <option value="day">Day</option>
-                <option value="week">Week</option>
-                <option value="month">Month</option>
-              </select>
+              {!isUnallocated ? (
+                <>
+                  <span className="flex items-center text-gray-500 dark:text-zinc-400">per</span>
+                  <select
+                    name="period"
+                    value={period}
+                    onChange={(e) => setPeriod(e.target.value as 'day' | 'week' | 'month')}
+                    className="rounded-lg border border-gray-300 dark:border-zinc-700 px-3 py-2 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white sm:text-sm"
+                  >
+                    <option value="day">Day</option>
+                    <option value="week">Week</option>
+                    <option value="month">Month</option>
+                  </select>
+                </>
+              ) : (
+                <input type="hidden" name="period" value="week" />
+              )}
             </div>
+            {isUnallocated && (
+              <p className="mt-1.5 text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                No allocation — time-only tracking. This item won't affect your availability.
+              </p>
+            )}
           </div>
           <div>
             <label htmlFor="end_date" className="block text-sm font-medium text-gray-700 dark:text-zinc-300">
@@ -196,7 +226,7 @@ export function ItemForm({ item }: ItemFormProps) {
           </div>
         </div>
 
-        {trackingMode === 'manual_track' && (
+        {trackingMode === 'manual_track' && !isUnallocated && (
           <div>
             <div className="flex items-center gap-1.5 mb-1">
               <label htmlFor="notice_period_days" className="block text-sm font-medium text-gray-700 dark:text-zinc-300">
@@ -224,7 +254,31 @@ export function ItemForm({ item }: ItemFormProps) {
               className="mt-1 block w-full rounded-lg border border-gray-300 dark:border-zinc-700 px-3 py-2 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white sm:text-sm"
             />
             
-            <div className="mt-4 flex items-start bg-gray-50 dark:bg-zinc-800/50 p-3 rounded-lg border border-gray-200 dark:border-zinc-700">
+          </div>
+        )}
+
+        <div className="space-y-3 pt-2 border-t border-gray-100 dark:border-zinc-800">
+          <div className="flex items-start bg-gray-50 dark:bg-zinc-800/50 p-3 rounded-lg border border-gray-200 dark:border-zinc-700">
+            <div className="flex h-5 items-center">
+              <input
+                id="show_on_public"
+                name="show_on_public"
+                type="checkbox"
+                checked={showOnPublic}
+                onChange={(e) => setShowOnPublic(e.target.checked)}
+                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-zinc-600 dark:bg-zinc-700 dark:checked:bg-blue-500 cursor-pointer"
+              />
+            </div>
+            <div className="ml-3 text-sm">
+              <label htmlFor="show_on_public" className="font-medium text-gray-700 dark:text-zinc-300 cursor-pointer">
+                Show item on public page
+              </label>
+              <p className="text-gray-500 dark:text-zinc-400 text-xs mt-0.5">If unchecked, this item won't appear on your public page, but it will still count toward your availability.</p>
+            </div>
+          </div>
+
+          {showOnPublic && trackingMode === 'manual_track' && !isUnallocated && (
+            <div className="flex items-start bg-gray-50 dark:bg-zinc-800/50 p-3 ml-4 rounded-lg border border-gray-200 dark:border-zinc-700">
               <div className="flex h-5 items-center">
                 <input
                   id="show_stats_publicly"
@@ -241,8 +295,8 @@ export function ItemForm({ item }: ItemFormProps) {
                 <p className="text-gray-500 dark:text-zinc-400 text-xs mt-0.5">If unchecked, this item will display "—" instead of its completion rate on your public page.</p>
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {state.error && (
