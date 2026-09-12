@@ -32,13 +32,14 @@ export function HistoryClient({ profile, items, timeEntries }: Props) {
 
       for (const te of relevantEntries) {
         const start = new Date(te.started_at)
-        if (te.stopped_at) {
-          const end = new Date(te.stopped_at)
-          spentView += (end.getTime() - start.getTime()) / (1000 * 3600)
-        } else {
-          spentView += (now.getTime() - start.getTime()) / (1000 * 3600)
+        const autoStopHours = profile.auto_stop_timer_hours || 8
+        const end = te.stopped_at ? new Date(te.stopped_at) : new Date(Math.min(now.getTime(), start.getTime() + autoStopHours * 3600000))
+        
+        if (!te.stopped_at && now.getTime() < start.getTime() + autoStopHours * 3600000) {
           isRunning = true
         }
+
+        spentView += (end.getTime() - start.getTime()) / (1000 * 3600)
       }
 
       let endDateToUse = now
@@ -46,7 +47,9 @@ export function HistoryClient({ profile, items, timeEntries }: Props) {
         endDateToUse = new Date(item.end_date)
       } else if (!item.is_active && relevantEntries.length > 0) {
         const lastEntry = relevantEntries.reduce((max, te) => {
-          const end = te.stopped_at ? new Date(te.stopped_at) : now
+          const start = new Date(te.started_at)
+          const autoStopHours = profile.auto_stop_timer_hours || 8
+          const end = te.stopped_at ? new Date(te.stopped_at) : new Date(Math.min(now.getTime(), start.getTime() + autoStopHours * 3600000))
           return max > end ? max : end
         }, new Date(0))
         endDateToUse = lastEntry

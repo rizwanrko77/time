@@ -18,6 +18,8 @@ export async function updateSettings(formData: FormData) {
   const defaultView = formData.get('default_view') as 'week' | 'month'
   const timezone = formData.get('timezone') as string
   const isPublic = formData.get('is_public') === 'on'
+  const autoStopTimerHoursStr = formData.get('auto_stop_timer_hours') as string
+  const autoStopTimerHours = autoStopTimerHoursStr ? parseInt(autoStopTimerHoursStr, 10) : 8
 
   const ctaTitle = formData.get('cta_title') as string
   const ctaDesc = formData.get('cta_description') as string
@@ -34,6 +36,7 @@ export async function updateSettings(formData: FormData) {
       default_view: defaultView,
       timezone: timezone,
       is_public: isPublic,
+      auto_stop_timer_hours: isNaN(autoStopTimerHours) ? 8 : autoStopTimerHours,
     })
     .eq('id', user.id)
 

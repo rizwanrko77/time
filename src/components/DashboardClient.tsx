@@ -81,14 +81,18 @@ export function DashboardClient({ profile, items, timeEntries }: DashboardProps)
 
       for (const te of relevantEntries) {
         const start = new Date(te.started_at)
-        if (start < cutoff) continue // Ignore old entries for completion rate
-
-        if (te.stopped_at) {
-          const stop = new Date(te.stopped_at)
-          spentView += (stop.getTime() - start.getTime()) / 3600000
-        } else {
+        const autoStopHours = profile.auto_stop_timer_hours || 8
+        let stop = te.stopped_at ? new Date(te.stopped_at) : new Date(Math.min(now.getTime(), start.getTime() + autoStopHours * 3600000))
+        
+        if (!te.stopped_at && now.getTime() < start.getTime() + autoStopHours * 3600000) {
           isRunning = true
-          spentView += (now.getTime() - start.getTime()) / 3600000
+        }
+
+        if (stop <= cutoff) continue
+
+        const effectiveStart = start < cutoff ? cutoff : start
+        if (stop > effectiveStart) {
+          spentView += (stop.getTime() - effectiveStart.getTime()) / 3600000
         }
       }
     }
@@ -118,12 +122,17 @@ export function DashboardClient({ profile, items, timeEntries }: DashboardProps)
 
       for (const te of relevantEntries) {
         const start = new Date(te.started_at)
-        const stop = te.stopped_at ? new Date(te.stopped_at) : now
-        const hours = (stop.getTime() - start.getTime()) / 3600000
-
-        if (start >= cutoff90) spent90 += hours
-        if (start >= cutoff30) spent30 += hours
-        if (start >= cutoff7) spent7 += hours
+        const autoStopHours = profile.auto_stop_timer_hours || 8
+        let stop = te.stopped_at ? new Date(te.stopped_at) : new Date(Math.min(now.getTime(), start.getTime() + autoStopHours * 3600000))
+        
+        const effectiveStart90 = start < cutoff90 ? cutoff90 : start
+        if (stop > effectiveStart90) spent90 += (stop.getTime() - effectiveStart90.getTime()) / 3600000
+        
+        const effectiveStart30 = start < cutoff30 ? cutoff30 : start
+        if (stop > effectiveStart30) spent30 += (stop.getTime() - effectiveStart30.getTime()) / 3600000
+        
+        const effectiveStart7 = start < cutoff7 ? cutoff7 : start
+        if (stop > effectiveStart7) spent7 += (stop.getTime() - effectiveStart7.getTime()) / 3600000
       }
 
       const alloc7 = item.allocated_period === 'day' ? item.allocated_hours * 7 : item.allocated_period === 'week' ? item.allocated_hours : item.allocated_hours * (7/30)

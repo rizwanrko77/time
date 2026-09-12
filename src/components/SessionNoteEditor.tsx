@@ -7,7 +7,9 @@ type Props = {
   entryId: string | null
   onClose: () => void
   initialNotes: string | null
-  onSave: (notes: string) => Promise<void>
+  initialStartedAt?: string | null
+  initialStoppedAt?: string | null
+  onSave: (notes: string, startedAt?: string, stoppedAt?: string | null) => Promise<void>
 }
 
 // Add TypeScript definitions for Web Speech API
@@ -18,8 +20,19 @@ declare global {
   }
 }
 
-export function SessionNoteEditor({ isOpen, entryId, onClose, initialNotes, onSave }: Props) {
+export function SessionNoteEditor({ isOpen, entryId, onClose, initialNotes, initialStartedAt, initialStoppedAt, onSave }: Props) {
   const [notes, setNotes] = useState(initialNotes || '')
+  
+  const toLocalISO = (dateStr: string | null | undefined) => {
+    if (!dateStr) return ''
+    const d = new Date(dateStr)
+    if (isNaN(d.getTime())) return ''
+    return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16)
+  }
+
+  const [startedAt, setStartedAt] = useState(toLocalISO(initialStartedAt))
+  const [stoppedAt, setStoppedAt] = useState(toLocalISO(initialStoppedAt))
+
   const [isRecording, setIsRecording] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [speechSupported, setSpeechSupported] = useState(true)
@@ -66,8 +79,10 @@ export function SessionNoteEditor({ isOpen, entryId, onClose, initialNotes, onSa
       } else {
         setNotes(initialNotes || '')
       }
+      setStartedAt(toLocalISO(initialStartedAt))
+      setStoppedAt(toLocalISO(initialStoppedAt))
     }
-  }, [isOpen, initialNotes, entryId])
+  }, [isOpen, initialNotes, initialStartedAt, initialStoppedAt, entryId])
 
   // Prevent accidental refresh if there are unsaved changes
   useEffect(() => {
@@ -242,7 +257,21 @@ export function SessionNoteEditor({ isOpen, entryId, onClose, initialNotes, onSa
     window.speechSynthesis?.cancel()
 
     setIsSaving(true)
-    await onSave(notes)
+    
+    let finalStartedAt: string | undefined = undefined;
+    let finalStoppedAt: string | null | undefined = undefined;
+    
+    if (startedAt) {
+      finalStartedAt = new Date(startedAt).toISOString()
+    }
+    
+    if (stoppedAt) {
+      finalStoppedAt = new Date(stoppedAt).toISOString()
+    } else if (initialStoppedAt === null) {
+      finalStoppedAt = null; // keep it null if it was null and still empty
+    }
+
+    await onSave(notes, finalStartedAt, finalStoppedAt)
     
     // Clear the auto-save draft upon successful save
     if (entryId) {
@@ -404,11 +433,35 @@ export function SessionNoteEditor({ isOpen, entryId, onClose, initialNotes, onSa
 
         {/* Content */}
         <div className="flex-1 p-6 flex flex-col relative overflow-hidden">
+          {entryId && (
+            <div className="flex flex-col sm:flex-row gap-4 mb-4 pb-4 border-b border-gray-100 dark:border-zinc-800">
+              <div className="flex-1">
+                <label className="block text-xs font-medium text-gray-500 dark:text-zinc-400 mb-1">Started At</label>
+                <input
+                  type="datetime-local"
+                  value={startedAt}
+                  onChange={(e) => setStartedAt(e.target.value)}
+                  className="w-full text-sm rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div className="flex-1">
+                <label className="block text-xs font-medium text-gray-500 dark:text-zinc-400 mb-1">Stopped At {initialStoppedAt === null && '(Running)'}</label>
+                <input
+                  type="datetime-local"
+                  value={stoppedAt}
+                  onChange={(e) => setStoppedAt(e.target.value)}
+                  placeholder="Running..."
+                  className="w-full text-sm rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+          )}
+
           <textarea
             value={notes}
             onChange={(e) => handleNotesChange(e.target.value)}
             placeholder="Type your notes here or click Dictate..."
-            className="flex-1 w-full bg-transparent border-0 focus:ring-0 p-0 text-gray-800 dark:text-zinc-200 resize-none placeholder:text-gray-400 text-lg leading-relaxed custom-scrollbar pb-8 outline-none"
+            className="flex-1 w-full bg-transparent border-0 focus:ring-0 p-0 text-gray-800 dark:text-zinc-200 resize-none placeholder:text-gray-400 text-lg leading-relaxed custom-scrollbar pb-24 outline-none"
             autoFocus
           />
 

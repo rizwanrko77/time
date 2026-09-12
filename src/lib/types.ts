@@ -10,6 +10,7 @@ export interface Profile {
   default_view: ViewMode;
   timezone: string;
   is_public: boolean;
+  auto_stop_timer_hours: number;
   created_at: string;
 }
 

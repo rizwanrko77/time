@@ -6,6 +6,7 @@ DROP TABLE IF EXISTS public.items CASCADE;
 DROP TABLE IF EXISTS public.cta CASCADE;
 DROP TABLE IF EXISTS public.profiles CASCADE;
 DROP FUNCTION IF EXISTS public.get_public_summary(text, text);
+DROP FUNCTION IF EXISTS public.clean_stale_timers(uuid);
 
 -- 2. Profiles table
 CREATE TABLE public.profiles (
@@ -17,6 +18,7 @@ CREATE TABLE public.profiles (
   default_view  text not null default 'week' check (default_view in ('week','month')),
   timezone      text not null default 'UTC',
   is_public     boolean not null default true,
+  auto_stop_timer_hours integer not null default 8 check (auto_stop_timer_hours > 0),
   created_at    timestamptz not null default now()
 );
 
@@ -62,6 +64,20 @@ CREATE TABLE public.time_entries (
 );
 CREATE INDEX time_entries_item_idx ON public.time_entries(item_id);
 CREATE UNIQUE INDEX one_running_per_item ON public.time_entries(item_id) WHERE (stopped_at IS NULL);
+
+-- 5b. Helper to auto-stop stale timers
+CREATE OR REPLACE FUNCTION public.clean_stale_timers(p_user_id uuid)
+RETURNS void AS $$
+BEGIN
+  UPDATE public.time_entries te
+  SET stopped_at = started_at + (p.auto_stop_timer_hours || ' hours')::interval
+  FROM public.profiles p
+  WHERE te.user_id = p.id
+    AND p.id = p_user_id
+    AND te.stopped_at IS NULL
+    AND now() > te.started_at + (p.auto_stop_timer_hours || ' hours')::interval;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- 6. Row Level Security (RLS)
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
@@ -159,7 +175,11 @@ DECLARE
   v_item RECORD;
 BEGIN
   -- Get the current item allocation directly
-  SELECT * INTO v_item FROM public.items WHERE id = p_item_id;
+  SELECT i.*, p.auto_stop_timer_hours 
+  INTO v_item 
+  FROM public.items i
+  JOIN public.profiles p ON p.id = i.user_id
+  WHERE i.id = p_item_id;
 
   IF v_item.allocated_period = 'day' THEN
     v_allocated_hours := v_item.allocated_hours * p_days;
@@ -170,9 +190,12 @@ BEGIN
   END IF;
 
   -- Sum tracked hours
-  SELECT COALESCE(SUM(EXTRACT(EPOCH FROM (COALESCE(stopped_at, NOW()) - started_at)) / 3600.0), 0) INTO v_tracked_hours
+  SELECT COALESCE(SUM(EXTRACT(EPOCH FROM (
+    LEAST(COALESCE(stopped_at, NOW()), started_at + (v_item.auto_stop_timer_hours || ' hours')::interval) - GREATEST(started_at, (NOW() - (p_days || ' days')::interval))
+  )) / 3600.0), 0) INTO v_tracked_hours
   FROM public.time_entries
-  WHERE item_id = p_item_id AND started_at > (NOW() - (p_days || ' days')::interval);
+  WHERE item_id = p_item_id 
+    AND LEAST(COALESCE(stopped_at, NOW()), started_at + (v_item.auto_stop_timer_hours || ' hours')::interval) > (NOW() - (p_days || ' days')::interval);
 
   IF COALESCE(v_allocated_hours, 0) > 0 THEN
     v_completion := ROUND((v_tracked_hours / v_allocated_hours) * 100);
@@ -210,10 +233,11 @@ DECLARE
   v_30d NUMERIC;
   v_90d NUMERIC;
   v_120d NUMERIC;
+  v_auto_stop_hours INT;
 BEGIN
   -- Get profile
-  SELECT id, is_public, page_title, page_desc, timezone
-  INTO v_user_id, v_is_public, v_page_title, v_page_desc, v_timezone
+  SELECT id, is_public, page_title, page_desc, timezone, auto_stop_timer_hours
+  INTO v_user_id, v_is_public, v_page_title, v_page_desc, v_timezone, v_auto_stop_hours
   FROM public.profiles
   WHERE slug = p_slug;
   

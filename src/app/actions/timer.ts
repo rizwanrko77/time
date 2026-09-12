@@ -11,6 +11,9 @@ export async function startTimer(itemId: string) {
     return { error: 'Not authenticated' }
   }
 
+  // Clean stale timers first
+  await supabase.rpc('clean_stale_timers', { p_user_id: user.id })
+
   // Verify item belongs to user and is manual track
   const { data: item } = await supabase
     .from('items')
@@ -64,6 +67,9 @@ export async function stopTimer(itemId: string) {
     return { error: 'Not authenticated' }
   }
 
+  // Clean stale timers first
+  await supabase.rpc('clean_stale_timers', { p_user_id: user.id })
+
   // Find the open entry
   const { data: openEntry } = await supabase
     .from('time_entries')
@@ -112,3 +118,41 @@ export async function updateTimeEntryNotes(entryId: string, notes: string) {
   revalidatePath(`/items/[id]`, 'page')
   return { success: true }
 }
+
+export async function cleanStaleTimers() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  
+  if (user) {
+    await supabase.rpc('clean_stale_timers', { p_user_id: user.id })
+    revalidatePath('/')
+  }
+}
+
+export async function updateTimeEntry(entryId: string, startedAt: string, stoppedAt: string | null, notes: string | null) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  
+  if (!user) {
+    return { error: 'Not authenticated' }
+  }
+
+  const { error } = await supabase
+    .from('time_entries')
+    .update({ 
+      started_at: startedAt, 
+      stopped_at: stoppedAt, 
+      notes: notes 
+    })
+    .eq('id', entryId)
+    .eq('user_id', user.id)
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  revalidatePath('/')
+  revalidatePath(`/items/[id]`, 'page')
+  return { success: true }
+}
+

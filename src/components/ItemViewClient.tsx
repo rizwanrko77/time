@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useTransition } from 'react'
 import { Item, TimeEntry, Profile } from '@/lib/types'
-import { startTimer, stopTimer, updateTimeEntryNotes } from '@/app/actions/timer'
+import { startTimer, stopTimer, updateTimeEntry } from '@/app/actions/timer'
 import Link from 'next/link'
 import { SessionNoteEditor } from './SessionNoteEditor'
 
@@ -102,7 +102,8 @@ export function ItemViewClient({ item, timeEntries, profile }: Props) {
   let filteredDurationMs = 0
   for (const te of filteredEntries) {
     const start = new Date(te.started_at)
-    const end = te.stopped_at ? new Date(te.stopped_at) : now
+    const autoStopHours = profile.auto_stop_timer_hours || 8
+    const end = te.stopped_at ? new Date(te.stopped_at) : new Date(Math.min(now.getTime(), start.getTime() + autoStopHours * 3600000))
     filteredDurationMs += (end.getTime() - start.getTime())
   }
 
@@ -152,12 +153,9 @@ export function ItemViewClient({ item, timeEntries, profile }: Props) {
   let totalSpentMs = 0
   for (const te of timeEntries) {
     const start = new Date(te.started_at)
-    if (te.stopped_at) {
-      const end = new Date(te.stopped_at)
-      totalSpentMs += (end.getTime() - start.getTime())
-    } else {
-      totalSpentMs += (now.getTime() - start.getTime())
-    }
+    const autoStopHours = profile.auto_stop_timer_hours || 8
+    const end = te.stopped_at ? new Date(te.stopped_at) : new Date(Math.min(now.getTime(), start.getTime() + autoStopHours * 3600000))
+    totalSpentMs += (end.getTime() - start.getTime())
   }
 
   return (
@@ -337,8 +335,10 @@ export function ItemViewClient({ item, timeEntries, profile }: Props) {
                 <tbody className="divide-y divide-gray-200 dark:divide-zinc-800">
                   {filteredEntries.map(te => {
                     const start = new Date(te.started_at)
-                    const end = te.stopped_at ? new Date(te.stopped_at) : now
+                    const autoStopHours = profile.auto_stop_timer_hours || 8
+                    const end = te.stopped_at ? new Date(te.stopped_at) : new Date(Math.min(now.getTime(), start.getTime() + autoStopHours * 3600000))
                     const durationMs = end.getTime() - start.getTime()
+                    const isCapped = !te.stopped_at && now.getTime() >= start.getTime() + autoStopHours * 3600000
                     
                     return (
                       <tr key={te.id} className="hover:bg-gray-50 dark:hover:bg-zinc-800/20 transition-colors">
@@ -346,7 +346,7 @@ export function ItemViewClient({ item, timeEntries, profile }: Props) {
                           {formatDate(te.started_at)}
                         </td>
                         <td className="p-4 text-sm text-gray-900 dark:text-white">
-                          {te.stopped_at ? formatDate(te.stopped_at) : <span className="text-green-500 font-medium">Running...</span>}
+                          {te.stopped_at ? formatDate(te.stopped_at) : (isCapped ? <span className="text-orange-500 font-medium">Auto-stopped (Pending Sync)</span> : <span className="text-green-500 font-medium">Running...</span>)}
                         </td>
                         <td className="p-4 text-right text-sm font-medium text-gray-900 dark:text-white">
                           {mounted ? formatDuration(durationMs) : '--m'}
@@ -355,7 +355,7 @@ export function ItemViewClient({ item, timeEntries, profile }: Props) {
                           <button 
                             onClick={() => setEditingEntryId(te.id)}
                             className="p-1.5 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-md transition-colors group"
-                            title={te.notes ? "Edit Note" : "Add Note"}
+                            title="Edit Session"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -378,9 +378,11 @@ export function ItemViewClient({ item, timeEntries, profile }: Props) {
         entryId={editingEntryId}
         onClose={() => setEditingEntryId(null)}
         initialNotes={timeEntries.find(te => te.id === editingEntryId)?.notes || ''}
-        onSave={async (notes) => {
+        initialStartedAt={timeEntries.find(te => te.id === editingEntryId)?.started_at || null}
+        initialStoppedAt={timeEntries.find(te => te.id === editingEntryId)?.stopped_at || null}
+        onSave={async (notes, startedAt, stoppedAt) => {
           if (editingEntryId) {
-            await updateTimeEntryNotes(editingEntryId, notes)
+            await updateTimeEntry(editingEntryId, startedAt || new Date().toISOString(), stoppedAt || null, notes)
           }
         }}
       />
