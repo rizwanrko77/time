@@ -187,21 +187,6 @@ export function SettingsForm({ profile, cta, origin, email }: Props) {
             </select>
           </div>
           <div>
-            <label htmlFor="auto_stop_timer_hours" className="block text-sm font-medium text-gray-700 dark:text-zinc-300">
-              Auto-stop Timers After (Hours)
-            </label>
-            <input
-              id="auto_stop_timer_hours"
-              name="auto_stop_timer_hours"
-              type="number"
-              min="1"
-              max="720"
-              required
-              defaultValue={profile.auto_stop_timer_hours || 8}
-              className="mt-1 block w-full rounded-lg border border-gray-300 dark:border-zinc-700 px-3 py-2 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white sm:text-sm"
-            />
-          </div>
-          <div>
             <label htmlFor="timezone" className="block text-sm font-medium text-gray-700 dark:text-zinc-300">
               Timezone
             </label>
@@ -218,6 +203,21 @@ export function SettingsForm({ profile, cta, origin, email }: Props) {
                 <option value={tz}>{tz}</option>
               )}
             </select>
+          </div>
+          <div className="sm:col-span-2">
+            <label htmlFor="auto_stop_timer_hours" className="block text-sm font-medium text-gray-700 dark:text-zinc-300">
+              Auto-stop Timers After (Hours)
+            </label>
+            <input
+              id="auto_stop_timer_hours"
+              name="auto_stop_timer_hours"
+              type="number"
+              min="1"
+              max="720"
+              required
+              defaultValue={profile.auto_stop_timer_hours || 8}
+              className="mt-1 block w-full rounded-lg border border-gray-300 dark:border-zinc-700 px-3 py-2 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white sm:text-sm"
+            />
           </div>
           <div className="flex items-center sm:col-span-2">
             <input
